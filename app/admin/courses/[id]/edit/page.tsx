@@ -7,6 +7,8 @@ import CourseForm from "@/components/admin/course-form"
 import ModuleManager from "@/components/admin/module-manager"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+import TestManager from "@/components/admin/test-manager"
+
 export default async function EditCoursePage({ params }: { params: { id: string } }) {
   const session = await auth.api.getSession({ headers: await headers() })
 
@@ -30,12 +32,21 @@ export default async function EditCoursePage({ params }: { params: { id: string 
         },
         orderBy: { order: "asc" },
       },
+      test: {
+        include: {
+          questions: {
+            orderBy: { order: "asc" },
+          },
+        },
+      },
     },
   })
 
   if (!course) {
     notFound()
   }
+
+  const test = course.test?.[0] || null
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,9 +58,10 @@ export default async function EditCoursePage({ params }: { params: { id: string 
 
       <main className="container mx-auto px-4 py-8 max-w-6xl">
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="details">Course Details</TabsTrigger>
             <TabsTrigger value="content">Modules & Lessons</TabsTrigger>
+            <TabsTrigger value="test">Final Assessment</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details" className="mt-6">
@@ -58,6 +70,10 @@ export default async function EditCoursePage({ params }: { params: { id: string 
 
           <TabsContent value="content" className="mt-6">
             <ModuleManager courseId={course.id} modules={course.modules} />
+          </TabsContent>
+
+          <TabsContent value="test" className="mt-6">
+            <TestManager courseId={course.id} test={test} />
           </TabsContent>
         </Tabs>
       </main>

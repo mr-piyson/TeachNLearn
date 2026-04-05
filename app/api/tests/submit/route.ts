@@ -48,14 +48,53 @@ export async function POST(request: NextRequest) {
     const passed = score >= test.passingScore
 
     // Save result
-    await prisma.testResult.create({
-      data: {
-        userId: session.user.id,
-        testId: test.id,
-        score,
-        passed,
-        answers: JSON.stringify(answers),
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.testResult.create({
+        data: {
+          userId: session.user.id,
+          testId: test.id,
+          score,
+          passed,
+          answers: JSON.stringify(answers),
+        },
+      })
+
+      if (passed) {
+        // Mark enrollment as complete
+        await tx.enrollment.update({
+          where: {
+            userId_courseId: {
+              userId: session.user.id,
+              courseId: test.courseId,
+            },
+          },
+          data: {
+            progress: 100,
+            completedAt: new Date(),
+          },
+        })
+
+        // Generate certificate if it doesn't exist
+        const existingCert = await tx.certificate.findUnique({
+          where: {
+            userId_courseId: {
+              userId: session.user.id,
+              courseId: test.courseId,
+            },
+          },
+        })
+
+        if (!existingCert) {
+          const certificateNumber = `VGD-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`
+          await tx.certificate.create({
+            data: {
+              userId: session.user.id,
+              courseId: test.courseId,
+              certificateNumber,
+            },
+          })
+        }
+      }
     })
 
     return NextResponse.json({

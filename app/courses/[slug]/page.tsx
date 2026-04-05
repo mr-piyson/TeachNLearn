@@ -127,6 +127,25 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
               </CardContent>
             </Card>
           ))}
+
+          {enrollment && (
+            <Card className="border-primary bg-primary/5">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-primary" />
+                  Final Assessment
+                </CardTitle>
+                <CardDescription>
+                  Complete the final assessment to earn your certificate
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                 <Link href={`/courses/${course.slug}/test`}>
+                    <Button className="w-full">Start Final Assessment</Button>
+                 </Link>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </main>
     </div>

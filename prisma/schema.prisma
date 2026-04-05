@@ -93,6 +93,7 @@ model Course {
 
   modules      Module[]
   enrollments  Enrollment[]
+  test         Test[]
   certificates Certificate[]
 }
 
@@ -174,9 +175,10 @@ model Test {
   timeLimit    Int? // minutes
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  questions Question[]
-  results   TestResult[]
+  
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions    Question[]
+  results      TestResult[]
 }
 
 model Question {

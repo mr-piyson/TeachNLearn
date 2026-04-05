@@ -284,71 +284,117 @@ export default function TestInterface({ course, test, previousResults }: TestInt
   const options = JSON.parse(question.options)
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="border-b border-border bg-card">
+    <div className="min-h-screen bg-[#020617] text-slate-50 flex flex-col font-sans selection:bg-primary/30">
+      <header className="border-b border-white/10 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold">{test.title}</h1>
-            <div className="text-sm text-muted-foreground">
-              Question {currentQuestion + 1} of {test.questions.length}
+            <div>
+              <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
+                {test.title}
+              </h1>
+              <p className="text-xs text-slate-400 mt-1">{course.title}</p>
+            </div>
+            <div className="text-sm font-medium bg-slate-800 px-3 py-1 rounded-full border border-white/5">
+              Question <span className="text-blue-400">{currentQuestion + 1}</span> of {test.questions.length}
             </div>
           </div>
           <div className="mt-4">
-            <Progress value={progressPercentage} />
-            <p className="text-xs text-muted-foreground mt-2">
-              {answeredCount} of {test.questions.length} questions answered
-            </p>
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Progress</span>
+              <span className="text-[10px] font-bold text-blue-400">{Math.round(progressPercentage)}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+               <div 
+                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-out"
+                 style={{ width: `${progressPercentage}%` }}
+               />
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-3xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Question {currentQuestion + 1}</CardTitle>
-            <CardDescription className="text-base text-foreground mt-4">{question.question}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RadioGroup
-              value={answers[question.id] || ""}
-              onValueChange={(value) => handleAnswerChange(question.id, value)}
-            >
-              <div className="space-y-3">
-                {options.map((option: string, index: number) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-3 p-4 border border-border rounded-lg hover:bg-muted/50 cursor-pointer"
-                  >
-                    <RadioGroupItem value={option} id={`option-${index}`} />
-                    <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-                      {option}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </RadioGroup>
-          </CardContent>
-        </Card>
+      <main className="flex-1 container mx-auto px-4 py-12 max-w-3xl">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <Card className="bg-slate-900/40 border-white/10 backdrop-blur-sm overflow-hidden shadow-2xl">
+            <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+            <CardHeader className="pt-8 px-8">
+              <CardTitle className="text-2xl font-semibold leading-tight text-white">
+                {question.question}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-8 pb-8">
+              <RadioGroup
+                value={answers[question.id] || ""}
+                onValueChange={(value) => handleAnswerChange(question.id, value)}
+                className="grid gap-3"
+              >
+                {options.map((option: string, index: number) => {
+                  const isSelected = answers[question.id] === option
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => handleAnswerChange(question.id, option)}
+                      className={`
+                        group flex items-center space-x-3 p-5 border rounded-xl transition-all duration-200 cursor-pointer
+                        ${isSelected 
+                          ? "bg-blue-500/10 border-blue-500/50 ring-1 ring-blue-500/20" 
+                          : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20"}
+                      `}
+                    >
+                      <RadioGroupItem value={option} id={`option-${index}`} className="border-slate-600 text-blue-500" />
+                      <Label 
+                        htmlFor={`option-${index}`} 
+                        className={`text-base flex-1 cursor-pointer transition-colors ${isSelected ? "text-blue-200" : "text-slate-300"}`}
+                      >
+                        {option}
+                      </Label>
+                      <div className={`
+                        w-6 h-6 rounded-full flex items-center justify-center transition-all
+                        ${isSelected ? "bg-blue-500 scale-100" : "bg-white/5 scale-0 group-hover:scale-50"}
+                      `}>
+                         <div className="w-2 h-2 rounded-full bg-white" />
+                      </div>
+                    </div>
+                  )
+                })}
+              </RadioGroup>
+            </CardContent>
+          </Card>
+        </div>
       </main>
 
-      <footer className="border-t border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <footer className="border-t border-white/10 bg-slate-900/80 backdrop-blur-md py-6">
+        <div className="container mx-auto px-4 max-w-3xl flex items-center justify-between">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={handlePrevious}
             disabled={currentQuestion === 0}
-            className="bg-transparent"
+            className="text-slate-400 hover:text-white hover:bg-white/5"
           >
             Previous
           </Button>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             {currentQuestion === test.questions.length - 1 ? (
-              <Button onClick={handleSubmit} disabled={answeredCount < test.questions.length || submitting}>
-                {submitting ? "Submitting..." : "Submit Test"}
+              <Button 
+                onClick={handleSubmit} 
+                disabled={answeredCount < test.questions.length || submitting}
+                className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20 px-8"
+              >
+                {submitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Submitting...
+                  </div>
+                ) : "Finish Assessment"}
               </Button>
             ) : (
-              <Button onClick={handleNext}>Next</Button>
+              <Button 
+                onClick={handleNext}
+                className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-8"
+              >
+                Next
+              </Button>
             )}
           </div>
         </div>
