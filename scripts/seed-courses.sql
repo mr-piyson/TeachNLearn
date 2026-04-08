@@ -1,4 +1,4 @@
--- Seed initial cybersecurity courses
+-- Seed initial TeachNLearnurity courses
 -- Note: This is a reference. Actual seeding will be done via Prisma seed script
 
 INSERT INTO Course (id, title, slug, description, difficulty, duration, isPublished) VALUES

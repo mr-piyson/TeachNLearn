@@ -1,15 +1,15 @@
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import SignUpForm from "@/components/auth/signup-form"
-import Link from "next/link"
-import { Shield } from "lucide-react"
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import SignUpForm from "@/components/auth/signup-form";
+import Link from "next/link";
+import { Shield } from "lucide-react";
 
 export default async function SignUpPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (session) {
-    redirect("/dashboard")
+    redirect("/dashboard");
   }
 
   return (
@@ -18,10 +18,10 @@ export default async function SignUpPage() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <Shield className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold">CyberSec Academy</span>
+            <span className="text-2xl font-bold">TeachNLearn Academy</span>
           </Link>
           <h2 className="text-3xl font-bold">Create your account</h2>
-          <p className="text-muted-foreground mt-2">Start learning cybersecurity today</p>
+          <p className="text-muted-foreground mt-2">Start learning TeachNLearnurity today</p>
         </div>
 
         <SignUpForm />
@@ -34,5 +34,5 @@ export default async function SignUpPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

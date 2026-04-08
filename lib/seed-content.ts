@@ -1,14 +1,14 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function seedCourseContent() {
-  console.log("Seeding course content...")
+  console.log("Seeding course content...");
 
   // Authentication and Identity Management Course
   const authCourse = await prisma.course.findFirst({
     where: { slug: "auth-identity" },
-  })
+  });
 
   if (authCourse) {
     const module1 = await prisma.module.create({
@@ -18,7 +18,7 @@ async function seedCourseContent() {
         description: "Learn the fundamentals of authentication and identity management",
         order: 0,
       },
-    })
+    });
 
     await prisma.lesson.create({
       data: {
@@ -75,7 +75,7 @@ console.log("Hashed:", hash);
 const isValid = await verifyPassword(password, hash);
 console.log("Valid:", isValid); // true`,
       },
-    })
+    });
 
     await prisma.lesson.create({
       data: {
@@ -155,7 +155,7 @@ function validatePassword(password: string): { valid: boolean; errors: string[] 
   };
 }`,
       },
-    })
+    });
 
     const module2 = await prisma.module.create({
       data: {
@@ -164,7 +164,7 @@ function validatePassword(password: string): { valid: boolean; errors: string[] 
         description: "Implement MFA to add an extra layer of security",
         order: 1,
       },
-    })
+    });
 
     await prisma.lesson.create({
       data: {
@@ -216,7 +216,7 @@ import QRCode from 'qrcode';
 // Generate secret for new user
 function generateMFASecret(userEmail: string) {
   const secret = speakeasy.generateSecret({
-    name: \`CyberSec Academy (\${userEmail})\`,
+    name: \`TeachNLearn Academy (\${userEmail})\`,
     length: 32
   });
   
@@ -244,17 +244,17 @@ function verifyMFAToken(token: string, secret: string): boolean {
   return verified;
 }`,
       },
-    })
+    });
   }
 
-  console.log("Course content seeded successfully!")
+  console.log("Course content seeded successfully!");
 }
 
 seedCourseContent()
   .catch((e) => {
-    console.error(e)
-    process.exit(1)
+    console.error(e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
+    await prisma.$disconnect();
+  });

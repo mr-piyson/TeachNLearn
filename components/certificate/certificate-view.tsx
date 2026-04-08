@@ -1,58 +1,58 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Download, Share2, Award } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Download, Share2, Award } from "lucide-react";
+import Link from "next/link";
 
 interface CertificateViewProps {
   certificate: {
-    id: string
-    certificateNumber: string
-    issuedAt: Date
-  }
+    id: string;
+    certificateNumber: string;
+    issuedAt: Date;
+  };
   course: {
-    id: string
-    title: string
-    slug: string
-  }
+    id: string;
+    title: string;
+    slug: string;
+  };
   user: {
-    id: string
-    name?: string | null
-    email: string
-  }
+    id: string;
+    name?: string | null;
+    email: string;
+  };
 }
 
 export default function CertificateView({ certificate, course, user }: CertificateViewProps) {
-  const [downloading, setDownloading] = useState(false)
+  const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
-    setDownloading(true)
+    setDownloading(true);
 
     try {
-      const response = await fetch(`/api/certificates/${certificate.id}/download`)
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `certificate-${certificate.certificateNumber}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      const response = await fetch(`/api/certificates/${certificate.id}/download`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `certificate-${certificate.certificateNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
-      console.error("Failed to download certificate:", error)
+      console.error("Failed to download certificate:", error);
     } finally {
-      setDownloading(false)
+      setDownloading(false);
     }
-  }
+  };
 
   const formattedDate = new Date(certificate.issuedAt).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
-  })
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,7 +81,7 @@ export default function CertificateView({ certificate, course, user }: Certifica
               <div className="text-center space-y-6 relative">
                 <div className="space-y-2">
                   <p className="text-sm uppercase tracking-wider text-muted-foreground">Certificate of Completion</p>
-                  <h2 className="text-4xl font-bold text-primary">CyberSec Academy</h2>
+                  <h2 className="text-4xl font-bold text-primary">TeachNLearn Academy</h2>
                 </div>
 
                 <div className="space-y-4 py-8">
@@ -105,7 +105,7 @@ export default function CertificateView({ certificate, course, user }: Certifica
                 <div className="pt-8">
                   <div className="inline-block">
                     <div className="border-t-2 border-foreground pt-2">
-                      <p className="font-semibold">CyberSec Academy</p>
+                      <p className="font-semibold">TeachNLearn Academy</p>
                       <p className="text-sm text-muted-foreground">Authorized Signature</p>
                     </div>
                   </div>
@@ -127,14 +127,12 @@ export default function CertificateView({ certificate, course, user }: Certifica
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground mb-4">
-            Verify this certificate at: https://cybersec-academy.com/verify/{certificate.certificateNumber}
-          </p>
+          <p className="text-sm text-muted-foreground mb-4">Verify this certificate at: https://TeachNLearn-academy.com/verify/{certificate.certificateNumber}</p>
           <Link href="/dashboard">
             <Button variant="link">Continue Learning →</Button>
           </Link>
         </div>
       </main>
     </div>
-  )
+  );
 }

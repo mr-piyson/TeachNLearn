@@ -1,50 +1,44 @@
-"use client"
+"use client";
 
-import { Shield, LogOut, Settings, Award } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { signOut } from "@/lib/auth-client"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Shield, LogOut, Settings, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { signOut } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface DashboardHeaderProps {
   user: {
-    id: string
-    name?: string | null
-    email: string
-    role: string
-  }
+    id: string;
+    name?: string | null;
+    email: string;
+    role: string;
+  };
 }
 
 export default function DashboardHeader({ user }: DashboardHeaderProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push("/")
-    router.refresh()
-  }
+    await signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   const initials =
     user.name
       ?.split(" ")
       .map((n) => n[0])
       .join("")
-      .toUpperCase() || user.email[0].toUpperCase()
+      .toUpperCase() || user.email[0].toUpperCase();
 
   return (
     <header className="border-b border-border bg-card sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-bold text-foreground">CyberSec Academy</h1>
+          <h1 className="text-xl font-bold text-foreground">TeachNLearn Academy</h1>
         </Link>
 
         <div className="flex items-center gap-4">
@@ -93,5 +87,5 @@ export default function DashboardHeader({ user }: DashboardHeaderProps) {
         </div>
       </div>
     </header>
-  )
+  );
 }

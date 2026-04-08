@@ -1,9 +1,9 @@
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
-import SignInForm from "@/components/auth/signin-form"
-import Link from "next/link"
-import { Shield } from "lucide-react"
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import SignInForm from "@/components/auth/signin-form";
+import Link from "next/link";
+import { Shield } from "lucide-react";
 
 export default async function SignInPage() {
   // const session = await auth.api.getSession({ headers: await headers() })
@@ -18,7 +18,7 @@ export default async function SignInPage() {
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <Shield className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold">CyberSec Academy</span>
+            <span className="text-2xl font-bold">TeachNLearn Academy</span>
           </Link>
           <h2 className="text-3xl font-bold">Welcome back</h2>
           <p className="text-muted-foreground mt-2">Sign in to continue your learning journey</p>
@@ -34,5 +34,5 @@ export default async function SignInPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-// Prisma schema for Cybersecurity LMS
+// Prisma schema for TeachNLearnurity LMS
 
 generator client {
   provider = "prisma-client-js"

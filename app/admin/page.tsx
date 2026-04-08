@@ -1,33 +1,27 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { prisma } from "@/lib/db"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { BookOpen, Users, FileText, Award } from "lucide-react"
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { prisma } from "@/lib/db";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { BookOpen, Users, FileText, Award } from "lucide-react";
 
 export default async function AdminPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session) {
-    redirect("/dashboard")
-  }else {
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } })
+    redirect("/dashboard");
+  } else {
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
     if (user?.role !== "admin") {
-      redirect("/dashboard")
+      redirect("/dashboard");
     }
   }
 
-  const stats = await Promise.all([
-    prisma.course.count(),
-    prisma.user.count(),
-    prisma.enrollment.count(),
-    prisma.certificate.count(),
-  ])
+  const stats = await Promise.all([prisma.course.count(), prisma.user.count(), prisma.enrollment.count(), prisma.certificate.count()]);
 
-  const [coursesCount, usersCount, enrollmentsCount, certificatesCount] = stats
+  const [coursesCount, usersCount, enrollmentsCount, certificatesCount] = stats;
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,7 +81,7 @@ export default async function AdminPage() {
           <Card>
             <CardHeader>
               <CardTitle>Course Management</CardTitle>
-              <CardDescription>Create and manage cybersecurity courses</CardDescription>
+              <CardDescription>Create and manage TeachNLearnurity courses</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Link href="/admin/courses">
@@ -115,5 +109,5 @@ export default async function AdminPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
