@@ -94,6 +94,23 @@ export const adminRouter = router({
       return { success: true };
     }),
 
+  updateModule: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        order: z.number().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return await prisma.module.update({
+        where: { id },
+        data,
+      });
+    }),
+
   deleteLesson: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
@@ -101,6 +118,25 @@ export const adminRouter = router({
         where: { id: input.id },
       });
       return { success: true };
+    }),
+
+  updateLesson: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        content: z.string().optional(),
+        duration: z.number().optional(),
+        order: z.number().optional(),
+        videoUrl: z.string().optional().nullable(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return await prisma.lesson.update({
+        where: { id },
+        data,
+      });
     }),
 
   createTest: adminProcedure

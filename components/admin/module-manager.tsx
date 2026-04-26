@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash, ChevronDown, ChevronUp } from "lucide-react"
+import { Plus, Trash, ChevronDown, ChevronUp, Pencil, Check, X } from "lucide-react"
 import LessonManager from "./lesson-manager"
 import { trpc } from "@/lib/trpc/client"
 
@@ -15,15 +15,7 @@ interface Module {
   title: string
   description: string
   order: number
-  lessons: Lesson[]
-}
-
-interface Lesson {
-  id: string
-  title: string
-  content: string
-  order: number
-  duration: number
+  lessons: any[]
 }
 
 interface ModuleManagerProps {
@@ -36,8 +28,11 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
   const [expandedModule, setExpandedModule] = useState<string | null>(null)
   const [newModule, setNewModule] = useState({ title: "", description: "" })
   const [showNewForm, setShowNewForm] = useState(false)
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
+  const [moduleEditForm, setModuleEditForm] = useState({ title: "", description: "" })
 
   const createModule = trpc.admin.createModule.useMutation()
+  const updateModule = trpc.admin.updateModule.useMutation()
   const deleteModule = trpc.admin.deleteModule.useMutation()
 
   const handleCreateModule = async () => {
@@ -53,6 +48,25 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
       setShowNewForm(false)
     } catch (error) {
       console.error("Failed to create module:", error)
+    }
+  }
+
+  const handleStartModuleEdit = (module: Module) => {
+    setEditingModuleId(module.id)
+    setModuleEditForm({ title: module.title, description: module.description })
+  }
+
+  const handleUpdateModule = async () => {
+    if (!editingModuleId) return
+    try {
+      const updated = await updateModule.mutateAsync({
+        id: editingModuleId,
+        ...moduleEditForm,
+      })
+      setModules(modules.map(m => m.id === editingModuleId ? { ...m, ...updated } : m))
+      setEditingModuleId(null)
+    } catch (error) {
+      console.error("Failed to update module:", error)
     }
   }
 
@@ -78,7 +92,7 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
       </div>
 
       {showNewForm && (
-        <Card>
+        <Card className="border-primary/20 bg-muted/50">
           <CardHeader>
             <CardTitle>New Module</CardTitle>
           </CardHeader>
@@ -112,17 +126,60 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
 
       <div className="space-y-4">
         {modules.map((module, index) => (
-          <Card key={module.id}>
-            <CardHeader>
+          <Card key={module.id} className="overflow-hidden">
+            <CardHeader className="bg-muted/10">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <CardTitle className="flex items-center gap-2">
-                    <span className="text-muted-foreground">#{index + 1}</span>
-                    {module.title}
-                  </CardTitle>
-                  <CardDescription>{module.description}</CardDescription>
+                  {editingModuleId === module.id ? (
+                    <div className="space-y-3 pr-4">
+                      <div className="space-y-1">
+                        <Label className="text-xs uppercase text-muted-foreground font-bold tracking-wider">Module Title</Label>
+                        <Input 
+                          value={moduleEditForm.title} 
+                          onChange={(e) => setModuleEditForm({...moduleEditForm, title: e.target.value})}
+                          className="font-bold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs uppercase text-muted-foreground font-bold tracking-wider">Description</Label>
+                        <Textarea 
+                          value={moduleEditForm.description} 
+                          onChange={(e) => setModuleEditForm({...moduleEditForm, description: e.target.value})}
+                          rows={2}
+                        />
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <Button size="sm" onClick={handleUpdateModule}>
+                          <Check className="h-4 w-4 mr-2" />
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingModuleId(null)} className="bg-transparent">
+                          <X className="h-4 w-4 mr-2" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <CardTitle className="flex items-center gap-2">
+                        <span className="text-muted-foreground text-sm font-normal tracking-tight">MODULE {index + 1}</span>
+                        {module.title}
+                      </CardTitle>
+                      <CardDescription className="line-clamp-2 mt-1">{module.description}</CardDescription>
+                    </>
+                  )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1 ml-4 items-start">
+                  {!editingModuleId && (
+                    <>
+                      <Button size="sm" variant="ghost" onClick={() => handleStartModuleEdit(module)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteModule(module.id)}>
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
@@ -130,15 +187,12 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
                   >
                     {expandedModule === module.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => handleDeleteModule(module.id)}>
-                    <Trash className="h-4 w-4" />
-                  </Button>
                 </div>
               </div>
             </CardHeader>
 
             {expandedModule === module.id && (
-              <CardContent>
+              <CardContent className="pt-6 border-t bg-card">
                 <LessonManager moduleId={module.id} lessons={module.lessons} />
               </CardContent>
             )}
