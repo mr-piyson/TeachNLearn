@@ -21,6 +21,9 @@ export default function LessonContent({ lesson }: LessonContentProps) {
       <div className="prose prose-slate dark:prose-invert max-w-none">
         <ReactMarkdown
           components={{
+            h1: ({ children }) => <h1 className="text-3xl font-bold mt-8 mb-4">{children}</h1>,
+            h2: ({ children }) => <h2 className="text-2xl font-bold mt-6 mb-3 border-b pb-2">{children}</h2>,
+            h3: ({ children }) => <h3 className="text-xl font-bold mt-4 mb-2">{children}</h3>,
             code({ node, inline, className, children, ...props }: any) {
               const match = /language-(\w+)/.exec(className || "")
               return !inline && match ? (
@@ -28,7 +31,7 @@ export default function LessonContent({ lesson }: LessonContentProps) {
                   style={vscDarkPlus}
                   language={match[1]}
                   PreTag="div"
-                  className="rounded-lg"
+                  className="rounded-lg my-4"
                   {...props}
                 >
                   {String(children).replace(/\n$/, "")}
@@ -44,29 +47,6 @@ export default function LessonContent({ lesson }: LessonContentProps) {
           {lesson.content}
         </ReactMarkdown>
       </div>
-
-      {lesson.codeExample && (
-        <Card className="bg-muted/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Code className="h-5 w-5" />
-              Interactive Code Example
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <SyntaxHighlighter
-              language="javascript"
-              style={vscDarkPlus}
-              customStyle={{
-                margin: 0,
-                borderRadius: "0.5rem",
-              }}
-            >
-              {lesson.codeExample}
-            </SyntaxHighlighter>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

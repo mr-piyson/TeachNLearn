@@ -30,7 +30,6 @@ export default function LessonManager({ moduleId, lessons: initialLessons }: Les
     title: "",
     content: "",
     duration: 10,
-    codeExample: "",
   })
 
   const createLesson = trpc.admin.createLesson.useMutation()
@@ -45,7 +44,7 @@ export default function LessonManager({ moduleId, lessons: initialLessons }: Les
       })
 
       setLessons([...lessons, lesson as any])
-      setNewLesson({ title: "", content: "", duration: 10, codeExample: "" })
+      setNewLesson({ title: "", content: "", duration: 10 })
       setShowNewForm(false)
     } catch (error) {
       console.error("Failed to create lesson:", error)
@@ -94,16 +93,6 @@ export default function LessonManager({ moduleId, lessons: initialLessons }: Les
                 onChange={(e) => setNewLesson({ ...newLesson, content: e.target.value })}
                 placeholder="Lesson content in markdown format..."
                 rows={6}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Code Example (Optional)</Label>
-              <Textarea
-                value={newLesson.codeExample}
-                onChange={(e) => setNewLesson({ ...newLesson, codeExample: e.target.value })}
-                placeholder="// Add code examples here..."
-                rows={4}
-                className="font-mono text-sm"
               />
             </div>
             <div className="space-y-2">
