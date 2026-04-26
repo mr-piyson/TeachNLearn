@@ -1,12 +1,12 @@
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { prisma } from "@/lib/db"
-import CourseGrid from "@/components/dashboard/course-grid"
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { prisma } from "@/lib/db";
+import CourseGrid from "@/components/dashboard/course-grid";
 
 export default async function BrowseCoursesPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  
-  if (!session) return null
+  const session = await auth.api.getSession({ headers: await headers() });
+
+  if (!session) return null;
 
   const allCourses = await prisma.course.findMany({
     where: { isPublished: true },
@@ -17,7 +17,7 @@ export default async function BrowseCoursesPage() {
       },
     },
     orderBy: { createdAt: "desc" },
-  })
+  });
 
   return (
     <div className="space-y-6">
@@ -27,5 +27,5 @@ export default async function BrowseCoursesPage() {
       </div>
       <CourseGrid courses={allCourses} userId={session.user.id} />
     </div>
-  )
+  );
 }

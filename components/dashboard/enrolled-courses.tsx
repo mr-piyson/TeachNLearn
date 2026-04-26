@@ -1,30 +1,30 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { BookOpen, Clock, Award } from "lucide-react"
-import Link from "next/link"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { BookOpen, Clock, Award } from "lucide-react";
+import Link from "next/link";
 
 interface Enrollment {
-  id: string
-  progress: number
-  enrolledAt: Date
-  completedAt: Date | null
+  id: string;
+  progress: number;
+  enrolledAt: Date;
+  completedAt: Date | null;
   course: {
-    id: string
-    title: string
-    slug: string
-    description: string
-    duration: number
+    id: string;
+    title: string;
+    slug: string;
+    description: string;
+    duration: number;
     modules: {
-      id: string
-      lessons: unknown[]
-    }[]
-  }
+      id: string;
+      lessons: unknown[];
+    }[];
+  };
 }
 
 interface EnrolledCoursesProps {
-  enrollments: Enrollment[]
-  userId: string
+  enrollments: Enrollment[];
+  userId: string;
 }
 
 export default function EnrolledCourses({ enrollments }: EnrolledCoursesProps) {
@@ -38,12 +38,12 @@ export default function EnrolledCourses({ enrollments }: EnrolledCoursesProps) {
           <Button>Browse Courses</Button>
         </Link>
       </div>
-    )
+    );
   }
 
   const totalLessons = (course: Enrollment["course"]) => {
-    return course.modules.reduce((acc, module) => acc + module.lessons.length, 0)
-  }
+    return course.modules.reduce((acc, module) => acc + module.lessons.length, 0);
+  };
 
   return (
     <div>
@@ -94,5 +94,5 @@ export default function EnrolledCourses({ enrollments }: EnrolledCoursesProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

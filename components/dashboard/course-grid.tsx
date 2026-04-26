@@ -47,11 +47,6 @@ export default function CourseGrid({ courses, userId }: CourseGridProps) {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2">Available Courses</h2>
-        <p className="text-muted-foreground">Explore our comprehensive VulnGuard curriculum</p>
-      </div>
-
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {courses.map((course) => (
           <Card key={course.id} className="flex flex-col">
