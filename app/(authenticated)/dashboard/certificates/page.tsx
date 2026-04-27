@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
-import { prisma } from "@/lib/db"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Award, Download, Eye } from "lucide-react"
+import { Award } from "lucide-react"
 import Link from "next/link"
+import { trpc } from "@/lib/trpc/server"
+import CertificateCard from "@/components/certificate/certificate-card"
 
 export default async function CertificatesPage() {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -14,13 +15,7 @@ export default async function CertificatesPage() {
     redirect("/auth/signin")
   }
 
-  const certificates = await prisma.certificate.findMany({
-    where: { userId: session.user.id },
-    include: {
-      course: true,
-    },
-    orderBy: { issuedAt: "desc" },
-  })
+  const certificates = await trpc.certificates.getAll();
 
   return (
     <div className="space-y-6">
@@ -43,41 +38,7 @@ export default async function CertificatesPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {certificates.map((certificate) => (
-            <Card key={certificate.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                  <Award className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-lg">{certificate.course.title}</CardTitle>
-                <CardDescription>
-                  Issued on{" "}
-                  {new Date(certificate.issuedAt).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Certificate #: <span className="font-mono">{certificate.certificateNumber}</span>
-                </p>
-                <div className="flex gap-2 pt-2">
-                  <Link href={`/courses/${certificate.course.slug}/certificate`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full bg-transparent">
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </Button>
-                  </Link>
-                  <a href={`/api/certificates/${certificate.id}/download`} className="flex-1">
-                    <Button size="sm" className="w-full">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
+            <CertificateCard key={certificate.id} certificate={certificate as any} />
           ))}
         </div>
       )}

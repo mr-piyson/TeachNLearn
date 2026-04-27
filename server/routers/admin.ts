@@ -175,12 +175,16 @@ export const adminRouter = router({
         options: z.string(),
         correctAnswer: z.string(),
         explanation: z.string().optional(),
+        points: z.number().optional(),
         order: z.number(),
       }),
     )
     .mutation(async ({ input }) => {
       return await prisma.question.create({
-        data: input,
+        data: {
+          ...input,
+          points: input.points ?? 1,
+        },
       });
     }),
 
@@ -190,4 +194,43 @@ export const adminRouter = router({
     });
     return { success: true };
   }),
+
+  updateTest: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        passingScore: z.number().optional(),
+        timeLimit: z.number().nullable().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return await prisma.test.update({
+        where: { id },
+        data,
+      });
+    }),
+
+  updateQuestion: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        question: z.string().optional(),
+        type: z.string().optional(),
+        options: z.string().optional(),
+        correctAnswer: z.string().optional(),
+        explanation: z.string().optional(),
+        points: z.number().optional(),
+        order: z.number().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      return await prisma.question.update({
+        where: { id },
+        data,
+      });
+    }),
 });

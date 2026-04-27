@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Download, Share2, Award } from "lucide-react";
 import Link from "next/link";
+import { trpc } from "@/lib/trpc/client";
 
 interface CertificateViewProps {
   certificate: {
@@ -27,16 +28,27 @@ interface CertificateViewProps {
 export default function CertificateView({ certificate, course, user }: CertificateViewProps) {
   const [downloading, setDownloading] = useState(false);
 
+  const downloadMutation = trpc.certificates.download.useMutation();
+
   const handleDownload = async () => {
     setDownloading(true);
 
     try {
-      const response = await fetch(`/api/certificates/${certificate.id}/download`);
-      const blob = await response.blob();
+      const { pdfBase64, filename } = await downloadMutation.mutateAsync({ id: certificate.id });
+      
+      // Convert base64 to blob
+      const byteCharacters = atob(pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: "application/pdf" });
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `certificate-${certificate.certificateNumber}.pdf`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);

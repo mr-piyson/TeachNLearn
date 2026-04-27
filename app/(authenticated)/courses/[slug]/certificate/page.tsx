@@ -4,6 +4,7 @@ import { headers } from "next/headers"
 import { prisma } from "@/lib/db"
 import { notFound } from "next/navigation"
 import CertificateView from "@/components/certificate/certificate-view"
+import { trpc } from "@/lib/trpc/server"
 
 export default async function CertificatePage({ params }: { params: { slug: string } }) {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -20,49 +21,16 @@ export default async function CertificatePage({ params }: { params: { slug: stri
     notFound()
   }
 
-  // Check if user has passed the test
-  const test = await prisma.test.findFirst({
-    where: { courseId: course.id },
-  })
-
-  if (!test) {
-    redirect(`/courses/${params.slug}`)
+  try {
+    const certificate = await trpc.certificates.getOrCreate({ courseId: course.id });
+    return <CertificateView certificate={certificate} course={course} user={session.user as any} />
+  } catch (error: any) {
+    if (error.message === "Test not found for this course") {
+      redirect(`/courses/${(await params).slug}`)
+    }
+    if (error.message === "You must pass the test to earn a certificate") {
+      redirect(`/courses/${(await params).slug}/test`)
+    }
+    throw error;
   }
-
-  const passedTest = await prisma.testResult.findFirst({
-    where: {
-      userId: session.user.id,
-      testId: test.id,
-      passed: true,
-    },
-  })
-
-  if (!passedTest) {
-    redirect(`/courses/${params.slug}/test`)
-  }
-
-  // Get or create certificate
-  let certificate = await prisma.certificate.findUnique({
-    where: {
-      userId_courseId: {
-        userId: session.user.id,
-        courseId: course.id,
-      },
-    },
-  })
-
-  if (!certificate) {
-    // Generate unique certificate number
-    const certificateNumber = `CSEC-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`
-
-    certificate = await prisma.certificate.create({
-      data: {
-        userId: session.user.id,
-        courseId: course.id,
-        certificateNumber,
-      },
-    })
-  }
-
-  return <CertificateView certificate={certificate} course={course} user={session.user} />
 }

@@ -4,6 +4,7 @@ import { enrollmentsRouter } from './routers/enrollments';
 import { testsRouter } from './routers/tests';
 import { adminRouter } from './routers/admin';
 import { usersRouter } from './routers/users';
+import { certificatesRouter } from './routers/certificates';
 
 export const appRouter = router({
   progress: progressRouter,
@@ -11,6 +12,7 @@ export const appRouter = router({
   tests: testsRouter,
   admin: adminRouter,
   users: usersRouter,
+  certificates: certificatesRouter,
 });
 
 // Export type router type signature,
