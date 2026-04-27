@@ -1,14 +1,16 @@
+// Force rebuild
 import { z } from 'zod';
-import { router, adminProcedure, teacherProcedure } from '../trpc';
+import { router, adminProcedure, teacherProcedure, protectedProcedure } from '../trpc';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 
 export const usersRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: ctx.session.user.id },
     });
+    return user;
   }),
 
   getManagedUsers: teacherProcedure.query(async ({ ctx }) => {
