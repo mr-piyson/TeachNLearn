@@ -24,7 +24,7 @@ export default async function HomePage() {
             <Link href="/auth/signin">
               <Button variant="outline">Sign In</Button>
             </Link>
-            <Link href="/auth/signup">
+            <Link href="/auth/signin">
               <Button>Get Started</Button>
             </Link>
           </div>
@@ -34,8 +34,11 @@ export default async function HomePage() {
       <main>
         <section className="container mx-auto px-4 py-20 text-center">
           <h2 className="text-5xl font-bold mb-6 text-balance">Master TeachNLearnurity with Practical Training</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">Learn application security through hands-on courses covering authentication, encryption, secure coding, and more. Get certified and advance your career.</p>
-          <Link href="/auth/signup">
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-pretty">
+            Learn application security through hands-on courses covering authentication, encryption, secure coding, and
+            more. Get certified and advance your career.
+          </p>
+          <Link href="/auth/signin">
             <Button size="lg" className="text-lg px-8">
               Start Learning Free
             </Button>
@@ -49,7 +52,9 @@ export default async function HomePage() {
                 <Lock className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-semibold text-lg">10 Core Topics</h3>
-              <p className="text-sm text-muted-foreground">Comprehensive coverage of essential TeachNLearnurity domains</p>
+              <p className="text-sm text-muted-foreground">
+                Comprehensive coverage of essential TeachNLearnurity domains
+              </p>
             </div>
 
             <div className="text-center space-y-3">

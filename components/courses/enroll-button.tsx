@@ -1,35 +1,37 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { trpc } from "@/lib/trpc/client"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc/client";
+import { toast } from "sonner";
 
 interface EnrollButtonProps {
-  courseId: string
+  courseId: string;
 }
 
 export default function EnrollButton({ courseId }: EnrollButtonProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const enroll = trpc.enrollments.create.useMutation()
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const enroll = trpc.enrollments.create.useMutation();
 
   const handleEnroll = async () => {
-    setLoading(true)
+    setLoading(true);
 
     try {
       await enroll.mutateAsync({ courseId });
-      router.refresh()
+      router.refresh();
     } catch (error) {
-      console.error("Failed to enroll:", error)
+      console.error("Failed to enroll:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
+      toast.error("Failed to Enroll");
     }
-  }
+  };
 
   return (
     <Button size="lg" onClick={handleEnroll} disabled={loading}>
       {loading ? "Enrolling..." : "Enroll Now"}
     </Button>
-  )
+  );
 }

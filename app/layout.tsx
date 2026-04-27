@@ -20,13 +20,14 @@ export const metadata: Metadata = {
 };
 
 import { TRPCProvider } from "@/lib/trpc/Provider";
+import { ToastProvider } from "@/components/ui/toast";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="font-sans antialiased">
         <TRPCProvider>
-          {children}
+          <ToastProvider>{children}</ToastProvider>
         </TRPCProvider>
       </body>
     </html>

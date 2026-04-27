@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/lib/trpc/client";
+import { toast } from "sonner";
 
 interface Course {
   id: string;
@@ -42,6 +43,7 @@ export default function CourseGrid({ courses, userId }: CourseGridProps) {
       console.error("Failed to enroll:", error);
     } finally {
       setEnrolling(null);
+      toast.error("Failed to Enroll");
     }
   };
 
