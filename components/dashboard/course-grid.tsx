@@ -31,6 +31,7 @@ interface CourseGridProps {
 export default function CourseGrid({ courses, userId }: CourseGridProps) {
   const router = useRouter();
   const [enrolling, setEnrolling] = useState<string | null>(null);
+  const utils = trpc.useUtils();
   const enroll = trpc.enrollments.create.useMutation();
 
   const handleEnroll = async (courseId: string) => {
@@ -38,12 +39,18 @@ export default function CourseGrid({ courses, userId }: CourseGridProps) {
 
     try {
       await enroll.mutateAsync({ courseId });
+      toast.success("Successfully enrolled in course!");
+      utils.courses.getEnrolled.invalidate();
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to enroll:", error);
+      if (error.message?.includes("Already enrolled")) {
+        toast.warning("You are already enrolled in this course");
+      } else {
+        toast.error(error.message || "Failed to enroll");
+      }
     } finally {
       setEnrolling(null);
-      toast.error("Failed to Enroll");
     }
   };
 
