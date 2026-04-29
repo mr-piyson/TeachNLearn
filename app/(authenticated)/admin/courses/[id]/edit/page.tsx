@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 export default function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
-  
+
   const { data: user, isLoading: userLoading } = trpc.users.me.useQuery();
   const { data: course, isLoading: courseLoading } = trpc.admin.getCourseById.useQuery({ id });
 

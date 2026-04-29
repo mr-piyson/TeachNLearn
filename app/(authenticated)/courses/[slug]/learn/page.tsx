@@ -11,17 +11,17 @@ export default function LearnPage({ params }: { params: Promise<{ slug: string }
   const { slug } = use(params);
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { data: session, isLoading: sessionLoading } = useSession();
-  
+  const { data: session, isPending: sessionLoading } = useSession();
+
   const { data: course, isLoading: courseLoading } = trpc.courses.getBySlug.useQuery({ slug });
   const { data: enrollmentStatus, isLoading: statusLoading } = trpc.courses.getEnrollmentStatus.useQuery(
     { courseId: course?.id || "" },
-    { enabled: !!course?.id && !!session }
+    { enabled: !!course?.id && !!session },
   );
-  
+
   const { data: progress, isLoading: progressLoading } = trpc.courses.getCourseFullProgress.useQuery(
     { courseId: course?.id || "" },
-    { enabled: !!course?.id && !!session }
+    { enabled: !!course?.id && !!session },
   );
 
   const isLoading = sessionLoading || courseLoading || (!!session && !!course && (statusLoading || progressLoading));
@@ -33,7 +33,7 @@ export default function LearnPage({ params }: { params: Promise<{ slug: string }
         ...lesson,
         moduleTitle: module.title,
         moduleId: module.id,
-      }))
+      })),
     );
   }, [course]);
 
@@ -52,16 +52,16 @@ export default function LearnPage({ params }: { params: Promise<{ slug: string }
 
   if (!course || !session || !enrollmentStatus?.isEnrolled) {
     if (!courseLoading && !course) {
-       router.push("/dashboard");
-       return null;
+      router.push("/dashboard");
+      return null;
     }
     if (!sessionLoading && !session) {
-        router.push("/auth/signin");
-        return null;
+      router.push("/auth/signin");
+      return null;
     }
     if (!statusLoading && !enrollmentStatus?.isEnrolled) {
-        router.push(`/courses/${slug}`);
-        return null;
+      router.push(`/courses/${slug}`);
+      return null;
     }
     return null;
   }

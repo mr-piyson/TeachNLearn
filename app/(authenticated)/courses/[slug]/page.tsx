@@ -12,12 +12,12 @@ import { useSession } from "@/lib/auth-client";
 
 export default function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const { data: session, isLoading: sessionLoading } = useSession();
+  const { data: session, isPending: sessionLoading } = useSession();
   const { data: course, isLoading: courseLoading } = trpc.courses.getBySlug.useQuery({ slug });
-  
+
   const { data: enrollmentStatus, isLoading: statusLoading } = trpc.courses.getEnrollmentStatus.useQuery(
     { courseId: course?.id || "" },
-    { enabled: !!course?.id && !!session }
+    { enabled: !!course?.id && !!session },
   );
 
   const isLoading = sessionLoading || courseLoading || (!!session && !!course && statusLoading);
@@ -135,14 +135,12 @@ export default function CourseDetailPage({ params }: { params: Promise<{ slug: s
                   <Award className="h-5 w-5 text-primary" />
                   Final Assessment
                 </CardTitle>
-                <CardDescription>
-                  Complete the final assessment to earn your certificate
-                </CardDescription>
+                <CardDescription>Complete the final assessment to earn your certificate</CardDescription>
               </CardHeader>
               <CardContent>
-                 <Link href={`/courses/${course.slug}/test`}>
-                    <Button className="w-full">Start Final Assessment</Button>
-                 </Link>
+                <Link href={`/courses/${course.slug}/test`}>
+                  <Button className="w-full">Start Final Assessment</Button>
+                </Link>
               </CardContent>
             </Card>
           )}
