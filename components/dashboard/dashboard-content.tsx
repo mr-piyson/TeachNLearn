@@ -3,13 +3,7 @@
 import { useState } from "react";
 import { AppSidebar } from "./app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth-client";
@@ -32,14 +26,7 @@ interface DashboardContentProps {
   adminStats: any;
 }
 
-export default function DashboardContent({
-  user,
-  allCourses,
-  enrolledCourses,
-  userRole,
-  adminCourses,
-  adminStats,
-}: DashboardContentProps) {
+export default function DashboardContent({ user, allCourses, enrolledCourses, userRole, adminCourses, adminStats }: DashboardContentProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("my-courses");
   const canManageStudents = userRole === "teacher" || userRole === "admin";
@@ -68,9 +55,7 @@ export default function DashboardContent({
           <div className="bg-card border rounded-xl p-6 shadow-sm">
             <div className="mb-6">
               <h2 className="text-xl font-bold">User Directory</h2>
-              <p className="text-sm text-muted-foreground">
-                Manage the teachers and students assigned to the platform.
-              </p>
+              <p className="text-sm text-muted-foreground">Manage the teachers and students assigned to the platform.</p>
             </div>
             <UserManagement currentRole={userRole || "student"} />
           </div>
@@ -117,10 +102,7 @@ export default function DashboardContent({
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-9 w-9 rounded-full ring-offset-background transition-all hover:ring-2 hover:ring-primary/20"
-                >
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full ring-offset-background transition-all hover:ring-2 hover:ring-primary/20">
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
                   </Avatar>
@@ -140,10 +122,7 @@ export default function DashboardContent({
                     My Certificates
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="cursor-pointer text-destructive focus:text-destructive"
-                >
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
@@ -151,7 +130,7 @@ export default function DashboardContent({
             </DropdownMenu>
           </div>
         </header>
-        <main className="">
+        <main>
           <div className="container mx-auto max-w-7xl">{renderContent()}</div>
         </main>
       </SidebarInset>
