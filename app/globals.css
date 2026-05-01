@@ -81,13 +81,10 @@
 
 @layer base {
   * {
-    border-color: rgb(var(--color-border));
     @apply border-border outline-ring/50;
   }
 
   body {
-    background-color: rgb(var(--color-background));
-    color: rgb(var(--color-foreground));
     @apply bg-background text-foreground;
   }
 

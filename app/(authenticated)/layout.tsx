@@ -11,10 +11,15 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     redirect("/auth/signin");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { role: true },
-  });
+  let user = null;
+  try {
+    user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    });
+  } catch (error) {
+    console.error("Database error in layout:", error);
+  }
 
   return (
     <DashboardShell user={session.user} userRole={user?.role || "student"}>
