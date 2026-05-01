@@ -3,8 +3,9 @@ import { appRouter } from "@/server";
 import { createContext } from "@/server/context";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-const handler = (req: Request) =>
+const handler = async (req: Request) =>
   fetchRequestHandler({
     endpoint: "/api/trpc",
     req,
