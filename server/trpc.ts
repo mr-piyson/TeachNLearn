@@ -63,7 +63,7 @@ export const adminProcedure = protectedProcedure.use(async (opts) => {
 /**
  * Teacher procedure (also allows admins)
  */
-export const teacherProcedure = protectedProcedure.use(async (opts) => {
+export const teacherOrAdminProcedure = protectedProcedure.use(async (opts) => {
   const user = await prisma.user.findUnique({
     where: {
       id: opts.ctx.session.user.id,

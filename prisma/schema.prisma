@@ -16,7 +16,7 @@ model User {
   image         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
-  role          String?  @default("student")
+  role          String?  @default("teacher")
   teacherId     String?
   teacher       User?    @relation("TeacherStudents", fields: [teacherId], references: [id])
   students      User[]   @relation("TeacherStudents")
@@ -27,6 +27,7 @@ model User {
   Progress    Progress[]
   TestResult  TestResult[]
   Certificate Certificate[]
+  courses     Course[]      @relation("TeacherCourses")
 
   @@unique([email])
   @@index([teacherId])
@@ -94,10 +95,15 @@ model Course {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  teacherId String?
+  teacher   User?   @relation("TeacherCourses", fields: [teacherId], references: [id])
+
   modules      Module[]
   enrollments  Enrollment[]
   test         Test[]
   certificates Certificate[]
+
+  @@index([teacherId])
 }
 
 model Module {

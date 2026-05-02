@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
-import { Plus, Edit, Eye, BookOpen, Clock, Users as UsersIcon } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { Plus, Edit, Eye, BookOpen, Clock, Users as UsersIcon } from "lucide-react";
 
-interface AdminCourseListProps {
-  courses: any[]
+interface CourseListProps {
+  courses: any[];
 }
 
-export default function AdminCourseList({ courses }: AdminCourseListProps) {
+export default function CourseList({ courses }: CourseListProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -18,7 +18,7 @@ export default function AdminCourseList({ courses }: AdminCourseListProps) {
           <h2 className="text-2xl font-bold">Course Management</h2>
           <p className="text-muted-foreground">Create, edit, and publish your educational content.</p>
         </div>
-        <Link href="/admin/courses/new">
+        <Link href="/dashboard/courses/new">
           <Button className="shadow-lg shadow-primary/20">
             <Plus className="h-4 w-4 mr-2" />
             New Course
@@ -33,9 +33,7 @@ export default function AdminCourseList({ courses }: AdminCourseListProps) {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                      {course.title}
-                    </CardTitle>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">{course.title}</CardTitle>
                     <Badge variant={course.isPublished ? "default" : "secondary"} className="text-[10px] uppercase tracking-wider">
                       {course.isPublished ? "Published" : "Draft"}
                     </Badge>
@@ -61,7 +59,9 @@ export default function AdminCourseList({ courses }: AdminCourseListProps) {
             <CardContent>
               <div className="flex flex-wrap items-center gap-6 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Badge variant="outline" className="capitalize">{course.difficulty}</Badge>
+                  <Badge variant="outline" className="capitalize">
+                    {course.difficulty}
+                  </Badge>
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Clock className="h-4 w-4 text-primary/60" />
@@ -81,5 +81,5 @@ export default function AdminCourseList({ courses }: AdminCourseListProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

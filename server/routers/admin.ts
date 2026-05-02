@@ -1,15 +1,11 @@
 import { z } from "zod";
-import { router, adminProcedure } from "../trpc";
+import { router, adminProcedure, teacherOrAdminProcedure } from "../trpc";
 import { prisma } from "@/lib/db";
+import { TRPCError } from "@trpc/server";
 
 export const adminRouter = router({
-  getStats: adminProcedure.query(async () => {
-    const [coursesCount, usersCount, enrollmentsCount, certificatesCount] = await Promise.all([
-      prisma.course.count(),
-      prisma.user.count(),
-      prisma.enrollment.count(),
-      prisma.certificate.count(),
-    ]);
+  getStats: teacherOrAdminProcedure.query(async () => {
+    const [coursesCount, usersCount, enrollmentsCount, certificatesCount] = await Promise.all([prisma.course.count(), prisma.user.count(), prisma.enrollment.count(), prisma.certificate.count()]);
 
     return {
       coursesCount,
@@ -19,62 +15,82 @@ export const adminRouter = router({
     };
   }),
 
-  getAllCourses: adminProcedure.query(async () => {
+  getAllCourses: teacherOrAdminProcedure.input(z.object({ teacherId: z.string().optional() })).query(async ({ ctx, input }) => {
+    const { userRole, session } = ctx;
+
+    const where = {
+      ...(userRole === "teacher" && { teacherId: session.user.id }),
+      ...(input.teacherId && { teacherId: input.teacherId }),
+    };
+
     return await prisma.course.findMany({
+      where,
       include: {
         modules: true,
         _count: {
           select: { enrollments: true },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
   }),
 
-  getCourseById: adminProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ input }) => {
-      return await prisma.course.findUnique({
-        where: { id: input.id },
-        include: {
-          modules: {
-            include: {
-              lessons: {
-                orderBy: { order: "asc" },
-              },
+  getCourseById: teacherOrAdminProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {
+    const { userRole, session } = ctx;
+
+    // 1. Build dynamic authorization filter
+    const whereClause = {
+      id: input.id,
+      ...(userRole !== "admin" && { teacherId: session.user.id }),
+    };
+
+    // 2. Execute a single query with shared include logic
+    return await prisma.course.findUnique({
+      where: whereClause,
+      include: {
+        modules: {
+          orderBy: { order: "asc" },
+          include: {
+            lessons: {
+              orderBy: { order: "asc" },
             },
-            orderBy: { order: "asc" },
           },
-          test: {
-            include: {
-              questions: {
-                orderBy: { order: "asc" },
-              },
+        },
+        test: {
+          include: {
+            questions: {
+              orderBy: { order: "asc" },
             },
           },
+        },
+      },
+    });
+  }),
+
+  createCourse: teacherOrAdminProcedure
+    .input(
+      z.object({
+        title: z.string().min(1),
+        slug: z.string().min(1),
+        description: z.string(),
+        difficulty: z.string(),
+        duration: z.number().nonnegative(),
+        isPublished: z.boolean().default(false),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      // Ensure the course is linked to the user creating it
+      return await prisma.course.create({
+        data: {
+          ...input,
+          teacherId: ctx.session.user.id,
         },
       });
     }),
 
-  createCourse: adminProcedure
-    .input(
-      z.object({
-        title: z.string(),
-        slug: z.string(),
-        description: z.string(),
-        difficulty: z.string(),
-        duration: z.number(),
-        isPublished: z.boolean(),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      const course = await prisma.course.create({
-        data: input,
-      });
-      return course;
-    }),
-
-  updateCourse: adminProcedure
+  updateCourse: teacherOrAdminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -86,24 +102,35 @@ export const adminRouter = router({
         isPublished: z.boolean().optional(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { id, ...data } = input;
-      const course = await prisma.course.update({
-        where: { id },
+      const isAdmin = ctx.userRole === "admin";
+
+      // If admin, they can update any course.
+      // If teacher, the update only succeeds if the teacherId matches.
+      return await prisma.course.update({
+        where: {
+          id,
+          ...(isAdmin ? {} : { teacherId: ctx.session.user.id }),
+        },
         data,
       });
-      return course;
     }),
 
-  deleteCourse: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+  deleteCourse: teacherOrAdminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input, ctx }) => {
+    const isAdmin = ctx.userRole === "admin";
+
     await prisma.course.delete({
-      where: { id: input.id },
+      where: {
+        id: input.id,
+        ...(isAdmin ? {} : { teacherId: ctx.session.user.id }),
+      },
     });
     return { success: true };
   }),
 
   // Add more admin procedures as needed for modules, lessons, etc.
-  createModule: adminProcedure
+  createModule: teacherOrAdminProcedure
     .input(
       z.object({
         courseId: z.string(),
@@ -112,13 +139,23 @@ export const adminRouter = router({
         order: z.number(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const isAdmin = ctx.userRole === "admin";
+
+      const course = await prisma.course.findUnique({
+        where: {
+          id: input.courseId,
+          ...(isAdmin ? {} : { teacherId: ctx.session.user.id }),
+        },
+      });
+      if (!course) throw new TRPCError({ code: "NOT_FOUND", message: "Course not found" });
+
       return await prisma.module.create({
         data: input,
       });
     }),
 
-  createLesson: adminProcedure
+  createLesson: teacherOrAdminProcedure
     .input(
       z.object({
         moduleId: z.string(),
@@ -136,14 +173,14 @@ export const adminRouter = router({
       });
     }),
 
-  deleteModule: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+  deleteModule: teacherOrAdminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
     await prisma.module.delete({
       where: { id: input.id },
     });
     return { success: true };
   }),
 
-  updateModule: adminProcedure
+  updateModule: teacherOrAdminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -160,14 +197,14 @@ export const adminRouter = router({
       });
     }),
 
-  deleteLesson: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+  deleteLesson: teacherOrAdminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
     await prisma.lesson.delete({
       where: { id: input.id },
     });
     return { success: true };
   }),
 
-  updateLesson: adminProcedure
+  updateLesson: teacherOrAdminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -186,7 +223,7 @@ export const adminRouter = router({
       });
     }),
 
-  createTest: adminProcedure
+  createTest: teacherOrAdminProcedure
     .input(
       z.object({
         courseId: z.string(),
@@ -203,7 +240,7 @@ export const adminRouter = router({
       });
     }),
 
-  updateTestSettings: adminProcedure
+  updateTestSettings: teacherOrAdminProcedure
     .input(
       z.object({
         courseId: z.string(),
@@ -219,7 +256,7 @@ export const adminRouter = router({
       });
     }),
 
-  addQuestion: adminProcedure
+  addQuestion: teacherOrAdminProcedure
     .input(
       z.object({
         testId: z.string(),
@@ -241,14 +278,14 @@ export const adminRouter = router({
       });
     }),
 
-  deleteQuestion: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
+  deleteQuestion: teacherOrAdminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input }) => {
     await prisma.question.delete({
       where: { id: input.id },
     });
     return { success: true };
   }),
 
-  updateTest: adminProcedure
+  updateTest: teacherOrAdminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -266,7 +303,7 @@ export const adminRouter = router({
       });
     }),
 
-  updateQuestion: adminProcedure
+  updateQuestion: teacherOrAdminProcedure
     .input(
       z.object({
         id: z.string(),

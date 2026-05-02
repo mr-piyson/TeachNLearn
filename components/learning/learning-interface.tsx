@@ -1,84 +1,77 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { ChevronLeft, ChevronRight, CheckCircle, Circle, Menu, Award } from "lucide-react"
-import Link from "next/link"
-import LessonContent from "./lesson-content"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { trpc } from "@/lib/trpc/client"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { ChevronLeft, ChevronRight, CheckCircle, Circle, Menu, Award } from "lucide-react";
+import Link from "next/link";
+import LessonContent from "./lesson-content";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { trpc } from "@/lib/trpc/client";
 
 interface Module {
-  id: string
-  title: string
-  lessons: Lesson[]
+  id: string;
+  title: string;
+  lessons: Lesson[];
 }
 
 interface Lesson {
-  id: string
-  title: string
-  content: string
-  codeExample?: string | null
-  duration: number
-  moduleTitle?: string
-  moduleId: string
-  videoUrl?: string | null
+  id: string;
+  title: string;
+  content: string;
+  codeExample?: string | null;
+  duration: number;
+  moduleTitle?: string;
+  moduleId: string;
+  videoUrl?: string | null;
 }
 
 interface ProgressItem {
-  lessonId: string
-  completed: boolean
+  lessonId: string;
+  completed: boolean;
 }
 
 interface LearningInterfaceProps {
   course: {
-    id: string
-    title: string
-    slug: string
-  }
-  modules: Module[]
-  currentLesson: Lesson
-  allLessons: Lesson[]
-  progressMap: Map<string, ProgressItem>
-  userId: string
-  isCompleted: boolean
+    id: string;
+    title: string;
+    slug: string;
+  };
+  modules: Module[];
+  currentLesson: Lesson;
+  allLessons: Lesson[];
+  progressMap: Map<string, ProgressItem>;
+  userId: string;
+  isCompleted: boolean;
 }
 
-export default function LearningInterface({
-  course,
-  modules,
-  currentLesson,
-  allLessons,
-  progressMap: initialProgressMap,
-  isCompleted: initialCompleted,
-}: LearningInterfaceProps) {
-  const router = useRouter()
+export default function LearningInterface({ course, modules, currentLesson, allLessons, progressMap: initialProgressMap, isCompleted: initialCompleted }: LearningInterfaceProps) {
+  const router = useRouter();
   const utils = trpc.useUtils();
-  const [isCompleted, setIsCompleted] = useState(initialCompleted)
-  const [progressMap, setProgressMap] = useState(initialProgressMap)
-  const [marking, setMarking] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  
+  const [isCompleted, setIsCompleted] = useState(initialCompleted);
+  const [progressMap, setProgressMap] = useState(initialProgressMap);
+  const [marking, setMarking] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   useEffect(() => {
-    setProgressMap(initialProgressMap)
-    setIsCompleted(initialCompleted)
-  }, [initialProgressMap, initialCompleted])
+    setProgressMap(initialProgressMap);
+    setIsCompleted(initialCompleted);
+  }, [initialProgressMap, initialCompleted]);
 
   const updateProgress = trpc.progress.update.useMutation();
 
-  const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id)
-  const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null
-  const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null
+  const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id);
+  const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
+  const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
 
-  const completedCount = Array.from(progressMap.values()).filter((p) => p.completed).length
-  const progressPercentage = Math.round((completedCount / allLessons.length) * 100)
-  const allLessonsCompleted = completedCount === allLessons.length
+  const completedCount = Array.from(progressMap.values()).filter((p) => p.completed).length;
+  const progressPercentage = Math.round((completedCount / allLessons.length) * 100);
+  const allLessonsCompleted = completedCount === allLessons.length;
 
   const handleMarkComplete = async () => {
     const newStatus = !isCompleted;
-    setMarking(true)
+    setMarking(true);
 
     try {
       await updateProgress.mutateAsync({
@@ -87,28 +80,28 @@ export default function LearningInterface({
       });
 
       // Update local state for immediate feedback
-      setIsCompleted(newStatus)
-      const newMap = new Map(progressMap)
-      newMap.set(currentLesson.id, { lessonId: currentLesson.id, completed: newStatus })
-      setProgressMap(newMap)
+      setIsCompleted(newStatus);
+      const newMap = new Map(progressMap);
+      newMap.set(currentLesson.id, { lessonId: currentLesson.id, completed: newStatus });
+      setProgressMap(newMap);
 
       // Invalidate queries to sync with server
       utils.courses.getCourseFullProgress.invalidate({ courseId: course.id });
       utils.courses.getEnrolled.invalidate();
       utils.courses.getEnrollmentStatus.invalidate({ courseId: course.id });
-      
-      router.refresh()
+
+      router.refresh();
     } catch (error) {
-      console.error("Failed to update progress:", error)
+      console.error("Failed to update progress:", error);
     } finally {
-      setMarking(false)
+      setMarking(false);
     }
-  }
+  };
 
   const navigateToLesson = (lessonId: string) => {
-    router.push(`/courses/${course.slug}/learn?lesson=${lessonId}`)
-    setSidebarOpen(false)
-  }
+    router.push(`/courses/${course.slug}/learn?lesson=${lessonId}`);
+    setSidebarOpen(false);
+  };
 
   const SidebarContent = () => (
     <div className="h-full flex flex-col">
@@ -135,28 +128,18 @@ export default function LearningInterface({
               </h3>
               <div className="space-y-1">
                 {module.lessons.map((lesson) => {
-                  const lessonProgress = progressMap.get(lesson.id)
-                  const isActive = lesson.id === currentLesson.id
+                  const lessonProgress = progressMap.get(lesson.id);
+                  const isActive = lesson.id === currentLesson.id;
 
                   return (
-                    <button
-                      key={lesson.id}
-                      onClick={() => navigateToLesson(lesson.id)}
-                      className={`w-full text-left p-3 rounded-lg flex items-center gap-3 transition-colors ${
-                        isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                      }`}
-                    >
-                      {lessonProgress?.completed ? (
-                        <CheckCircle className="h-4 w-4 flex-shrink-0 text-primary" />
-                      ) : (
-                        <Circle className="h-4 w-4 flex-shrink-0" />
-                      )}
+                    <button key={lesson.id} onClick={() => navigateToLesson(lesson.id)} className={`w-full text-left p-3 rounded-lg flex items-center gap-3 transition-colors ${isActive ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+                      {lessonProgress?.completed ? <CheckCircle className="h-4 w-4 shrink-0 text-primary" /> : <Circle className="h-4 w-4 flex-shrink-0" />}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{lesson.title}</p>
                         <p className="text-xs opacity-80">{lesson.duration} min</p>
                       </div>
                     </button>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -172,7 +155,7 @@ export default function LearningInterface({
         </Link>
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="h-screen flex flex-col bg-background">
@@ -195,13 +178,7 @@ export default function LearningInterface({
           </div>
         </div>
 
-        <Button
-          onClick={handleMarkComplete}
-          disabled={marking}
-          variant={isCompleted ? "outline" : "default"}
-          size="sm"
-          className={isCompleted ? "bg-transparent" : ""}
-        >
+        <Button onClick={handleMarkComplete} disabled={marking} variant={isCompleted ? "outline" : "default"} size="sm" className={isCompleted ? "bg-transparent" : ""}>
           {isCompleted ? (
             <>
               <CheckCircle className="h-4 w-4 mr-2" />
@@ -252,5 +229,5 @@ export default function LearningInterface({
         </main>
       </div>
     </div>
-  )
+  );
 }

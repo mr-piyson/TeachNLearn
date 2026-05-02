@@ -17,12 +17,12 @@ export default function EditCoursePage({ params }: { params: Promise<{ id: strin
   const { data: course, isLoading: courseLoading } = trpc.admin.getCourseById.useQuery({ id });
 
   useEffect(() => {
-    if (!userLoading && (!user || user.role === "student")) {
+    if (!userLoading && (!user || (user.role !== "teacher" && user.role !== "admin"))) {
       router.push("/dashboard");
     }
   }, [user, userLoading, router]);
 
-  if (userLoading || courseLoading || !user || user.role === "student" || !course) {
+  if (userLoading || courseLoading || !user || (user.role !== "teacher" && user.role !== "admin") || !course) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

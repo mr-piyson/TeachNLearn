@@ -79,6 +79,7 @@ export function AppSidebar({ user, activeTab, setActiveTab }: AppSidebarProps) {
             <SidebarGroupContent>
               <SidebarMenu>
                 <NavItem id="students" href="/dashboard/students" icon={Users} label="Manage Students" tooltip="Manage Students" />
+                <NavItem id="courses" href="/dashboard/courses" icon={BookOpen} label="Manage My Courses" tooltip="Course Content" />
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

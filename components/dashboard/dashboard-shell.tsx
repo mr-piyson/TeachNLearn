@@ -43,6 +43,7 @@ export default function DashboardShell({ children, user, userRole }: DashboardSh
     if (pathname === "/dashboard/students") return "Student Management";
     if (pathname === "/dashboard/certificates") return "My Certificates";
     if (pathname === "/dashboard") return "My Learning Path";
+    if (pathname === "/dashboard/teacher/courses") return "Manage My Courses";
     return "Dashboard";
   };
 
@@ -92,7 +93,7 @@ export default function DashboardShell({ children, user, userRole }: DashboardSh
           </div>
         </header>
         <main>
-          <div className="container mx-auto max-w-7xl">{children}</div>
+          <div className="container mx-auto max-w-7xl p-4">{children}</div>
         </main>
       </SidebarInset>
     </SidebarProvider>

@@ -11,12 +11,12 @@ export default function NewCoursePage() {
   const { data: user, isLoading } = trpc.users.me.useQuery();
 
   useEffect(() => {
-    if (!isLoading && (!user || user.role === "student")) {
+    if (!isLoading && (!user || (user.role !== "teacher" && user.role !== "admin"))) {
       router.push("/dashboard");
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user || user.role === "student") {
+  if (isLoading || !user || (user.role !== "teacher" && user.role !== "admin")) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

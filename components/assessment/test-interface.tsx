@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Award, AlertCircle, CheckCircle, XCircle } from "lucide-react";
+import { Clock, Award, AlertCircle, CheckCircle, XCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc/client";
@@ -301,7 +301,7 @@ export default function TestInterface({ course, test, previousResults }: TestInt
               <span className="text-[10px] font-bold text-blue-400">{Math.round(progressPercentage)}%</span>
             </div>
             <div className="h-1.5 w-full  rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-out" style={{ width: `${progressPercentage}%` }} />
+              <div className="h-full bg-linear-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-out" style={{ width: `${progressPercentage}%` }} />
             </div>
           </div>
         </div>
@@ -310,9 +310,9 @@ export default function TestInterface({ course, test, previousResults }: TestInt
       <main className="flex-1 container mx-auto px-4 py-12 max-w-3xl">
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <Card className="   backdrop-blur-sm overflow-hidden shadow-2xl">
-            <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500" />
+            <div className="h-1 w-full bg-linear-to-r from-blue-500 via-indigo-500 to-purple-500" />
             <CardHeader className="pt-8 px-8">
-              <CardTitle className="text-2xl font-semibold leading-tight text-white">
+              <CardTitle className="text-2xl font-semibold leading-tight">
                 <Markdown content={question.question} className="prose-slate dark:prose-invert" />
               </CardTitle>
             </CardHeader>
@@ -352,13 +352,13 @@ export default function TestInterface({ course, test, previousResults }: TestInt
 
       <footer className="border-t   backdrop-blur-md py-6">
         <div className="container mx-auto px-4 max-w-3xl flex items-center justify-between">
-          <Button variant="ghost" onClick={handlePrevious} disabled={currentQuestion === 0} className=" hover:text-white hover:bg-white/5">
+          <Button variant="ghost" onClick={handlePrevious} disabled={currentQuestion === 0} className=" hover:bg-white/5">
             Previous
           </Button>
 
           <div className="flex gap-3">
             {currentQuestion === test.questions.length - 1 ? (
-              <Button onClick={handleSubmit} disabled={answeredCount < test.questions.length || submitting} className="bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/20 px-8">
+              <Button onClick={handleSubmit} disabled={answeredCount < test.questions.length || submitting} className="bg-blue-600 hover:bg-blue-500 text-foreground! shadow-lg shadow-blue-900/20 px-8">
                 {submitting ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -369,8 +369,9 @@ export default function TestInterface({ course, test, previousResults }: TestInt
                 )}
               </Button>
             ) : (
-              <Button onClick={handleNext} className="bg-white/5 hover:bg-white/10 text-white border  px-8">
+              <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white px-8">
                 Next
+                <ArrowRight className="h-5 w-5" />
               </Button>
             )}
           </div>

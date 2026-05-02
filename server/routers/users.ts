@@ -1,9 +1,8 @@
 // Force rebuild
-import { z } from 'zod';
-import { router, adminProcedure, teacherProcedure, protectedProcedure } from '../trpc';
-import { prisma } from '@/lib/db';
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
+import { z } from "zod";
+import { router, adminProcedure, teacherOrAdminProcedure, protectedProcedure } from "../trpc";
+import { prisma } from "@/lib/db";
+import { auth } from "@/lib/auth";
 
 export const usersRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => {
@@ -13,45 +12,40 @@ export const usersRouter = router({
     return user;
   }),
 
-  getManagedUsers: teacherProcedure.query(async ({ ctx }) => {
+  getManagedUsers: teacherOrAdminProcedure.query(async ({ ctx }) => {
     const { session, userRole } = ctx;
 
-    if (userRole === 'admin') {
+    if (userRole === "admin") {
       // Admin sees everyone (except maybe other admins if we want to filter them out)
       return await prisma.user.findMany({
         where: {
-          role: { in: ['teacher', 'student'] },
+          role: { in: ["teacher", "student"] },
         },
         include: {
-          teacher: {
-            select: {
-              name: true,
-              email: true,
-            },
-          },
+          teacher: true,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
     } else {
       // Teacher sees only their students
       return await prisma.user.findMany({
         where: {
           teacherId: session.user.id,
-          role: 'student',
+          role: "student",
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
     }
   }),
 
   getTeachers: adminProcedure.query(async () => {
     return await prisma.user.findMany({
-      where: { role: 'teacher' },
+      where: { role: "teacher" },
       select: { id: true, name: true, email: true },
     });
   }),
 
-  createUser: teacherProcedure
+  createUser: teacherOrAdminProcedure
     .input(
       z.object({
         name: z.string(),
@@ -59,14 +53,14 @@ export const usersRouter = router({
         password: z.string().min(8),
         role: z.string(),
         teacherId: z.string().nullable().optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { session, userRole } = ctx;
 
       // Teachers can ONLY create students
-      if (userRole === 'teacher' && input.role !== 'student') {
-        throw new Error('Teachers can only create student accounts');
+      if (userRole === "teacher" && input.role !== "student") {
+        throw new Error("Teachers can only create student accounts");
       }
 
       // Use better-auth to create the user and account
@@ -80,11 +74,11 @@ export const usersRouter = router({
       });
 
       if (!result) {
-        throw new Error('Failed to create user account');
+        throw new Error("Failed to create user account");
       }
 
       // For teachers, automatically assign the student to them
-      const teacherId = userRole === 'teacher' ? session.user.id : input.teacherId;
+      const teacherId = userRole === "teacher" ? session.user.id : input.teacherId;
 
       // better-auth creates the user, but we need to update their role and teacherId
       return await prisma.user.update({
@@ -105,11 +99,11 @@ export const usersRouter = router({
         password: z.string().min(8).optional(),
         role: z.string().optional(),
         teacherId: z.string().nullable().optional(),
-      })
+      }),
     )
     .mutation(async ({ input }) => {
       const { id, password, ...data } = input;
-      
+
       const user = await prisma.user.update({
         where: { id },
         data,
@@ -118,65 +112,59 @@ export const usersRouter = router({
       if (password) {
         // To update another user's password securely with better-auth,
         // we'd typically use an admin plugin or a password hasher.
-        // For now, we'll use better-auth's internal update if possible 
+        // For now, we'll use better-auth's internal update if possible
         // or provide a placeholder for the logic.
         // Note: For most setups, you'd need to hash this password.
         await prisma.account.updateMany({
-          where: { 
+          where: {
             userId: id,
-            providerId: 'email' 
+            providerId: "email",
           },
           data: {
-            password: password // In a real app, hash this with scrypt/bcrypt
-          }
+            password: password, // In a real app, hash this with scrypt/bcrypt
+          },
         });
       }
-      
+
       return user;
     }),
 
-  assignStudentToTeacher: adminProcedure
-    .input(z.object({ studentId: z.string(), teacherId: z.string().nullable() }))
-    .mutation(async ({ input }) => {
-      return await prisma.user.update({
-        where: { id: input.studentId },
-        data: { teacherId: input.teacherId },
-      });
-    }),
+  assignStudentToTeacher: adminProcedure.input(z.object({ studentId: z.string(), teacherId: z.string().nullable() })).mutation(async ({ input }) => {
+    return await prisma.user.update({
+      where: { id: input.studentId },
+      data: { teacherId: input.teacherId },
+    });
+  }),
 
-  removeStudentFromTeacher: teacherProcedure
-    .input(z.object({ studentId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      const { session, userRole } = ctx;
-      
-      if (userRole === 'admin') {
-        return await prisma.user.update({
-          where: { id: input.studentId },
-          data: { teacherId: null },
-        });
-      }
+  removeStudentFromTeacher: teacherOrAdminProcedure.input(z.object({ studentId: z.string() })).mutation(async ({ input, ctx }) => {
+    const { session, userRole } = ctx;
 
-      // Check if student is actually assigned to this teacher
-      const student = await prisma.user.findUnique({
-        where: { id: input.studentId },
-        select: { teacherId: true },
-      });
-
-      if (student?.teacherId !== session.user.id) {
-        throw new Error('You do not have permission to manage this student');
-      }
-
+    if (userRole === "admin") {
       return await prisma.user.update({
         where: { id: input.studentId },
         data: { teacherId: null },
       });
-    }),
+    }
 
-  deleteUser: adminProcedure
-    .input(z.object({ userId: z.string() }))
-    .mutation(async ({ input }) => {
-      return await prisma.user.delete({
-        where: { id: input.userId },
-      });
-    }),
+    // Check if student is actually assigned to this teacher
+    const student = await prisma.user.findUnique({
+      where: { id: input.studentId },
+      select: { teacherId: true },
+    });
+
+    if (student?.teacherId !== session.user.id) {
+      throw new Error("You do not have permission to manage this student");
+    }
+
+    return await prisma.user.update({
+      where: { id: input.studentId },
+      data: { teacherId: null },
+    });
+  }),
+
+  deleteUser: adminProcedure.input(z.object({ userId: z.string() })).mutation(async ({ input }) => {
+    return await prisma.user.delete({
+      where: { id: input.userId },
+    });
+  }),
 });
