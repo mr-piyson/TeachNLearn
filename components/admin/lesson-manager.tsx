@@ -1,45 +1,47 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Trash, Pencil, X, Check } from "lucide-react"
-import { trpc } from "@/lib/trpc/client"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Markdown } from "@/components/ui/markdown"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, Trash, Pencil, X, Check } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Markdown } from "@/components/ui/markdown";
+import { useParams } from "next/navigation";
 
 interface Lesson {
-  id: string
-  title: string
-  content: string
-  order: number
-  duration: number
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+  duration: number;
 }
 
 interface LessonManagerProps {
-  moduleId: string
-  lessons: Lesson[]
+  moduleId: string;
+  lessons: Lesson[];
 }
 
 export default function LessonManager({ moduleId, lessons: initialLessons = [] }: LessonManagerProps) {
-  const [lessons, setLessons] = useState(initialLessons || [])
-  const [showNewForm, setShowNewForm] = useState(false)
-  const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
-  
+  const [lessons, setLessons] = useState(initialLessons || []);
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
+  const utils = trpc.useUtils();
+  const { id } = useParams();
   const [newLesson, setNewLesson] = useState({
     title: "",
     content: "",
     duration: 10,
-  })
+  });
 
-  const [editForm, setEditForm] = useState<Partial<Lesson>>({})
+  const [editForm, setEditForm] = useState<Partial<Lesson>>({});
 
-  const createLesson = trpc.admin.createLesson.useMutation()
-  const updateLesson = trpc.admin.updateLesson.useMutation()
-  const deleteLesson = trpc.admin.deleteLesson.useMutation()
+  const createLesson = trpc.admin.createLesson.useMutation();
+  const updateLesson = trpc.admin.updateLesson.useMutation();
+  const deleteLesson = trpc.admin.deleteLesson.useMutation();
 
   const handleCreateLesson = async () => {
     try {
@@ -47,59 +49,65 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
         moduleId,
         ...newLesson,
         order: lessons.length,
-      })
+      });
 
-      setLessons([...lessons, lesson as any])
-      setNewLesson({ title: "", content: "", duration: 10 })
-      setShowNewForm(false)
+      setLessons([...lessons, lesson as any]);
+      setNewLesson({ title: "", content: "", duration: 10 });
+      setShowNewForm(false);
+      utils.admin.getCourseById.invalidate({ id: id as string });
     } catch (error) {
-      console.error("Failed to create lesson:", error)
+      console.error("Failed to create lesson:", error);
     }
-  }
+  };
 
   const handleStartEdit = (lesson: Lesson) => {
-    setEditingLessonId(lesson.id)
-    setEditForm(lesson)
-    setShowNewForm(false)
-  }
+    setEditingLessonId(lesson.id);
+    setEditForm(lesson);
+    setShowNewForm(false);
+  };
 
   const handleUpdateLesson = async () => {
-    if (!editingLessonId) return
+    if (!editingLessonId) return;
     try {
       const updated = await updateLesson.mutateAsync({
         id: editingLessonId,
         title: editForm.title,
         content: editForm.content,
         duration: editForm.duration,
-      })
-      
-      setLessons(lessons.map(l => l.id === editingLessonId ? (updated as any) : l))
-      setEditingLessonId(null)
-      setEditForm({})
+      });
+
+      setLessons(lessons.map((l) => (l.id === editingLessonId ? (updated as any) : l)));
+      setEditingLessonId(null);
+      setEditForm({});
+      utils.admin.getCourseById.invalidate({ id: id as string });
     } catch (error) {
-      console.error("Failed to update lesson:", error)
+      console.error("Failed to update lesson:", error);
     }
-  }
+  };
 
   const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm("Are you sure you want to delete this lesson?")) return
+    if (!confirm("Are you sure you want to delete this lesson?")) return;
 
     try {
-      await deleteLesson.mutateAsync({ id: lessonId })
-      setLessons(lessons.filter((l) => l.id !== lessonId))
+      await deleteLesson.mutateAsync({ id: lessonId });
+      setLessons(lessons.filter((l) => l.id !== lessonId));
+      utils.admin.getCourseById.invalidate({ id: id as string });
     } catch (error) {
-      console.error("Failed to delete lesson:", error)
+      console.error("Failed to delete lesson:", error);
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Lessons ({lessons.length})</h3>
-        <Button size="sm" onClick={() => {
-          setShowNewForm(!showNewForm)
-          setEditingLessonId(null)
-        }}>
+        <Button
+          size="sm"
+          onClick={() => {
+            setShowNewForm(!showNewForm);
+            setEditingLessonId(null);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Lesson
         </Button>
@@ -108,68 +116,37 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
       {(showNewForm || editingLessonId) && (
         <Card className="bg-muted/50 border-primary/20">
           <CardHeader>
-            <CardTitle className="text-base">
-              {editingLessonId ? `Edit Lesson: ${editForm.title}` : "New Lesson"}
-            </CardTitle>
+            <CardTitle className="text-base">{editingLessonId ? `Edit Lesson: ${editForm.title}` : "New Lesson"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Lesson Title</Label>
-              <Input
-                value={editingLessonId ? editForm.title : newLesson.title}
-                onChange={(e) => 
-                  editingLessonId 
-                    ? setEditForm({ ...editForm, title: e.target.value })
-                    : setNewLesson({ ...newLesson, title: e.target.value })
-                }
-                placeholder="e.g., Password Hashing Basics"
-              />
+              <Input value={editingLessonId ? editForm.title : newLesson.title} onChange={(e) => (editingLessonId ? setEditForm({ ...editForm, title: e.target.value }) : setNewLesson({ ...newLesson, title: e.target.value }))} placeholder="e.g., Password Hashing Basics" />
             </div>
             <div className="space-y-2">
               <Tabs defaultValue="edit" className="w-full">
                 <div className="flex items-center justify-between mb-2">
                   <Label>Content (Markdown)</Label>
                   <TabsList className="h-8">
-                    <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
-                    <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                    <TabsTrigger value="edit" className="text-xs">
+                      Edit
+                    </TabsTrigger>
+                    <TabsTrigger value="preview" className="text-xs">
+                      Preview
+                    </TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsContent value="edit" className="mt-0">
-                  <Textarea
-                    value={editingLessonId ? editForm.content : newLesson.content}
-                    onChange={(e) => 
-                      editingLessonId 
-                        ? setEditForm({ ...editForm, content: e.target.value })
-                        : setNewLesson({ ...newLesson, content: e.target.value })
-                    }
-                    placeholder="Lesson content in markdown format..."
-                    rows={10}
-                    className="min-h-[200px]"
-                  />
+                  <Textarea value={editingLessonId ? editForm.content : newLesson.content} onChange={(e) => (editingLessonId ? setEditForm({ ...editForm, content: e.target.value }) : setNewLesson({ ...newLesson, content: e.target.value }))} placeholder="Lesson content in markdown format..." rows={10} className="min-h-[200px]" />
                 </TabsContent>
                 <TabsContent value="preview" className="mt-0">
-                  <div className="border rounded-md p-4 bg-muted/20 min-h-[200px]">
-                    {(editingLessonId ? editForm.content : newLesson.content) ? (
-                      <Markdown content={editingLessonId ? editForm.content! : newLesson.content} />
-                    ) : (
-                      <p className="text-sm text-muted-foreground italic">No content to preview</p>
-                    )}
-                  </div>
+                  <div className="border rounded-md p-4 bg-muted/20 min-h-[200px]">{(editingLessonId ? editForm.content : newLesson.content) ? <Markdown content={editingLessonId ? editForm.content! : newLesson.content} /> : <p className="text-sm text-muted-foreground italic">No content to preview</p>}</div>
                 </TabsContent>
               </Tabs>
             </div>
             <div className="space-y-2">
               <Label>Duration (minutes)</Label>
-              <Input
-                type="number"
-                value={editingLessonId ? editForm.duration : newLesson.duration}
-                onChange={(e) => 
-                  editingLessonId 
-                    ? setEditForm({ ...editForm, duration: Number.parseInt(e.target.value) })
-                    : setNewLesson({ ...newLesson, duration: Number.parseInt(e.target.value) })
-                }
-                min="1"
-              />
+              <Input type="number" value={editingLessonId ? editForm.duration : newLesson.duration} onChange={(e) => (editingLessonId ? setEditForm({ ...editForm, duration: Number.parseInt(e.target.value) }) : setNewLesson({ ...newLesson, duration: Number.parseInt(e.target.value) }))} min="1" />
             </div>
             <div className="flex gap-2">
               {editingLessonId ? (
@@ -220,5 +197,5 @@ export default function LessonManager({ moduleId, lessons: initialLessons = [] }
         ))}
       </div>
     </div>
-  )
+  );
 }

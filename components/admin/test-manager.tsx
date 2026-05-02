@@ -1,64 +1,65 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash, Edit2, Check, X, Award } from "lucide-react"
-import { trpc } from "@/lib/trpc/client"
-import { toast } from "sonner"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Markdown } from "@/components/ui/markdown"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash, Edit2, Check, X, Award } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Markdown } from "@/components/ui/markdown";
 
 interface Question {
-  id: string
-  question: string
-  type: string
-  options: string // JSON string
-  correctAnswer: string
-  explanation?: string | null
-  points: number
-  order: number
+  id: string;
+  question: string;
+  type: string;
+  options: string; // JSON string
+  correctAnswer: string;
+  explanation?: string | null;
+  points: number;
+  order: number;
 }
 
 interface Test {
-  id: string
-  title: string
-  description: string
-  passingScore: number
-  timeLimit: number | null
-  questions: Question[]
+  id: string;
+  title: string;
+  description: string;
+  passingScore: number;
+  timeLimit: number | null;
+  questions: Question[];
 }
 
 interface TestManagerProps {
-  courseId: string
-  test: Test | null
+  courseId: string;
+  test: Test | null;
 }
 
 export default function TestManager({ courseId, test: initialTest }: TestManagerProps) {
-  const [test, setTest] = useState<Test | null>(initialTest)
-  const [loading, setLoading] = useState(false)
-  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null)
+  const [test, setTest] = useState<Test | null>(initialTest);
+  const [loading, setLoading] = useState(false);
+  const utils = trpc.useUtils();
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
   const [newQuestion, setNewQuestion] = useState({
     question: "",
     options: ["", "", "", ""],
     correctAnswer: "",
     explanation: "",
     points: 1,
-  })
-  const [showNewForm, setShowNewForm] = useState(false)
+  });
+  const [showNewForm, setShowNewForm] = useState(false);
 
-  const createTest = trpc.admin.createTest.useMutation()
-  const updateTest = trpc.admin.updateTest.useMutation()
-  const addQuestion = trpc.admin.addQuestion.useMutation()
-  const updateQuestion = trpc.admin.updateQuestion.useMutation()
-  const deleteQuestion = trpc.admin.deleteQuestion.useMutation()
+  const createTest = trpc.admin.createTest.useMutation();
+  const updateTest = trpc.admin.updateTest.useMutation();
+  const addQuestion = trpc.admin.addQuestion.useMutation();
+  const updateQuestion = trpc.admin.updateQuestion.useMutation();
+  const deleteQuestion = trpc.admin.deleteQuestion.useMutation();
 
   const handleCreateTest = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const data = await createTest.mutateAsync({
         courseId,
@@ -66,20 +67,21 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
         description: "Test your knowledge to earn a certificate",
         passingScore: 70,
         timeLimit: 30,
-      })
-      setTest(data as any)
-      toast.success("Test created successfully")
+      });
+      setTest(data as any);
+      toast.success("Test created successfully");
+      utils.admin.getCourseById.invalidate({ id: courseId });
     } catch (error) {
-      console.error("Failed to create test:", error)
-      toast.error("Failed to create test")
+      console.error("Failed to create test:", error);
+      toast.error("Failed to create test");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleAddQuestion = async () => {
-    if (!test) return
-    setLoading(true)
+    if (!test) return;
+    setLoading(true);
     try {
       const question = await addQuestion.mutateAsync({
         testId: test.id,
@@ -87,82 +89,86 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
         options: JSON.stringify(newQuestion.options.filter((o) => o.trim() !== "")),
         order: test.questions.length,
         type: "multiple-choice",
-      })
+      });
 
       setTest({
         ...test,
         questions: [...test.questions, question as any],
-      })
+      });
       setNewQuestion({
         question: "",
         options: ["", "", "", ""],
         correctAnswer: "",
         explanation: "",
         points: 1,
-      })
-      setShowNewForm(false)
-      toast.success("Question added")
+      });
+      setShowNewForm(false);
+      toast.success("Question added");
+      utils.admin.getCourseById.invalidate({ id: courseId });
     } catch (error) {
-      console.error("Failed to add question:", error)
-      toast.error("Failed to add question")
+      console.error("Failed to add question:", error);
+      toast.error("Failed to add question");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleUpdateQuestion = async (id: string, data: any) => {
-    setLoading(true)
+    setLoading(true);
     try {
       const updated = await updateQuestion.mutateAsync({
         id,
         ...data,
         options: Array.isArray(data.options) ? JSON.stringify(data.options.filter((o: string) => o.trim() !== "")) : data.options,
-      })
+      });
 
       if (test) {
         setTest({
           ...test,
           questions: test.questions.map((q) => (q.id === id ? { ...q, ...updated } : q)),
-        })
+        });
       }
-      setEditingQuestionId(null)
-      toast.success("Question updated")
+      setEditingQuestionId(null);
+      toast.success("Question updated");
+      utils.admin.getCourseById.invalidate({ id: courseId });
     } catch (error) {
-      console.error("Failed to update question:", error)
-      toast.error("Failed to update question")
+      console.error("Failed to update question:", error);
+      toast.error("Failed to update question");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteQuestion = async (questionId: string) => {
-    if (!test || !confirm("Are you sure?")) return
+    if (!test || !confirm("Are you sure?")) return;
     try {
-      await deleteQuestion.mutateAsync({ id: questionId })
+      await deleteQuestion.mutateAsync({ id: questionId });
       setTest({
         ...test,
         questions: test.questions.filter((q) => q.id !== questionId),
-      })
-      toast.success("Question deleted")
+      });
+      toast.success("Question deleted");
+      utils.admin.getCourseById.invalidate({ id: courseId });
     } catch (error) {
-      console.error("Failed to delete question:", error)
-      toast.error("Failed to delete question")
+      console.error("Failed to delete question:", error);
+      toast.error("Failed to delete question");
     }
-  }
+  };
 
   const updateTestSettings = async (updates: { passingScore?: number; timeLimit?: number | null }) => {
-    if (!test) return
+    if (!test) return;
     try {
       await updateTest.mutateAsync({
         id: test.id,
         ...updates,
-      })
-      toast.success("Settings saved")
+      });
+      toast.success("Settings saved");
+      utils.admin.getCourseById.invalidate({ id: courseId });
     } catch (error) {
-      console.error("Failed to update test settings:", error)
-      toast.error("Failed to save settings")
+      console.error("Failed to update test settings:", error);
+      toast.error("Failed to save settings");
     }
-  }
+  };
 
   if (!test) {
     return (
@@ -177,10 +183,10 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const totalPoints = test.questions.reduce((sum, q) => sum + q.points, 0)
+  const totalPoints = test.questions.reduce((sum, q) => sum + q.points, 0);
 
   return (
     <div className="space-y-6">
@@ -196,8 +202,8 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
               type="number"
               value={test.passingScore}
               onChange={(e) => {
-                const val = Number.parseInt(e.target.value)
-                setTest({ ...test, passingScore: val })
+                const val = Number.parseInt(e.target.value);
+                setTest({ ...test, passingScore: val });
               }}
               onBlur={() => updateTestSettings({ passingScore: test.passingScore })}
             />
@@ -208,8 +214,8 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
               type="number"
               value={test.timeLimit || ""}
               onChange={(e) => {
-                const val = e.target.value ? Number.parseInt(e.target.value) : null
-                setTest({ ...test, timeLimit: val })
+                const val = e.target.value ? Number.parseInt(e.target.value) : null;
+                setTest({ ...test, timeLimit: val });
               }}
               onBlur={() => updateTestSettings({ timeLimit: test.timeLimit })}
             />
@@ -240,37 +246,25 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
                   <div className="flex items-center justify-between mb-2">
                     <Label>Question Text</Label>
                     <TabsList className="h-8">
-                      <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
-                      <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                      <TabsTrigger value="edit" className="text-xs">
+                        Edit
+                      </TabsTrigger>
+                      <TabsTrigger value="preview" className="text-xs">
+                        Preview
+                      </TabsTrigger>
                     </TabsList>
                   </div>
                   <TabsContent value="edit" className="mt-0">
-                    <Textarea
-                      value={newQuestion.question}
-                      onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
-                      placeholder="Enter the question (Markdown supported)..."
-                      className="min-h-[100px]"
-                    />
+                    <Textarea value={newQuestion.question} onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })} placeholder="Enter the question (Markdown supported)..." className="min-h-[100px]" />
                   </TabsContent>
                   <TabsContent value="preview" className="mt-0">
-                    <div className="border rounded-md p-3 bg-muted/20 min-h-[100px]">
-                      {newQuestion.question ? (
-                        <Markdown content={newQuestion.question} className="prose-sm" />
-                      ) : (
-                        <p className="text-sm text-muted-foreground italic">No content to preview</p>
-                      )}
-                    </div>
+                    <div className="border rounded-md p-3 bg-muted/20 min-h-[100px]">{newQuestion.question ? <Markdown content={newQuestion.question} className="prose-sm" /> : <p className="text-sm text-muted-foreground italic">No content to preview</p>}</div>
                   </TabsContent>
                 </Tabs>
               </div>
               <div className="space-y-2">
                 <Label>Points</Label>
-                <Input
-                  type="number"
-                  value={newQuestion.points}
-                  onChange={(e) => setNewQuestion({ ...newQuestion, points: Number.parseInt(e.target.value) })}
-                  min="1"
-                />
+                <Input type="number" value={newQuestion.points} onChange={(e) => setNewQuestion({ ...newQuestion, points: Number.parseInt(e.target.value) })} min="1" />
               </div>
             </div>
 
@@ -284,19 +278,13 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
                   <Input
                     value={opt}
                     onChange={(e) => {
-                      const newOpts = [...newQuestion.options]
-                      newOpts[i] = e.target.value
-                      setNewQuestion({ ...newQuestion, options: newOpts })
+                      const newOpts = [...newQuestion.options];
+                      newOpts[i] = e.target.value;
+                      setNewQuestion({ ...newQuestion, options: newOpts });
                     }}
                     placeholder={`Option ${i + 1}`}
                   />
-                  <Button
-                    type="button"
-                    variant={newQuestion.correctAnswer === opt && opt !== "" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setNewQuestion({ ...newQuestion, correctAnswer: opt })}
-                    className={newQuestion.correctAnswer === opt && opt !== "" ? "" : "bg-transparent"}
-                  >
+                  <Button type="button" variant={newQuestion.correctAnswer === opt && opt !== "" ? "default" : "outline"} size="sm" onClick={() => setNewQuestion({ ...newQuestion, correctAnswer: opt })} className={newQuestion.correctAnswer === opt && opt !== "" ? "" : "bg-transparent"}>
                     {newQuestion.correctAnswer === opt && opt !== "" ? <Check className="h-4 w-4" /> : "Set Correct"}
                   </Button>
                 </div>
@@ -308,26 +296,19 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
                 <div className="flex items-center justify-between mb-2">
                   <Label>Explanation (Optional)</Label>
                   <TabsList className="h-8">
-                    <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
-                    <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                    <TabsTrigger value="edit" className="text-xs">
+                      Edit
+                    </TabsTrigger>
+                    <TabsTrigger value="preview" className="text-xs">
+                      Preview
+                    </TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsContent value="edit" className="mt-0">
-                  <Textarea
-                    value={newQuestion.explanation}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })}
-                    placeholder="Explain why the answer is correct..."
-                    rows={2}
-                  />
+                  <Textarea value={newQuestion.explanation} onChange={(e) => setNewQuestion({ ...newQuestion, explanation: e.target.value })} placeholder="Explain why the answer is correct..." rows={2} />
                 </TabsContent>
                 <TabsContent value="preview" className="mt-0">
-                  <div className="border rounded-md p-3 bg-muted/20 min-h-[60px]">
-                    {newQuestion.explanation ? (
-                      <Markdown content={newQuestion.explanation} className="prose-sm" />
-                    ) : (
-                      <p className="text-sm text-muted-foreground italic">No explanation to preview</p>
-                    )}
-                  </div>
+                  <div className="border rounded-md p-3 bg-muted/20 min-h-[60px]">{newQuestion.explanation ? <Markdown content={newQuestion.explanation} className="prose-sm" /> : <p className="text-sm text-muted-foreground italic">No explanation to preview</p>}</div>
                 </TabsContent>
               </Tabs>
             </div>
@@ -346,21 +327,11 @@ export default function TestManager({ courseId, test: initialTest }: TestManager
 
       <div className="space-y-4">
         {test.questions.map((q, idx) => (
-          <QuestionItem
-            key={q.id}
-            question={q}
-            index={idx}
-            isEditing={editingQuestionId === q.id}
-            onEdit={() => setEditingQuestionId(q.id)}
-            onCancel={() => setEditingQuestionId(null)}
-            onDelete={() => handleDeleteQuestion(q.id)}
-            onSave={(data:any) => handleUpdateQuestion(q.id, data)}
-            loading={loading}
-          />
+          <QuestionItem key={q.id} question={q} index={idx} isEditing={editingQuestionId === q.id} onEdit={() => setEditingQuestionId(q.id)} onCancel={() => setEditingQuestionId(null)} onDelete={() => handleDeleteQuestion(q.id)} onSave={(data: any) => handleUpdateQuestion(q.id, data)} loading={loading} />
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, onSave, loading }: any) {
@@ -370,7 +341,7 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
     correctAnswer: question.correctAnswer,
     explanation: question.explanation || "",
     points: question.points,
-  })
+  });
 
   if (isEditing) {
     return (
@@ -379,40 +350,35 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
           <CardTitle className="text-lg">Edit Question {index + 1}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 pb-4">
-           <div className="grid gap-4 md:grid-cols-4">
-               <div className="md:col-span-3 space-y-2">
-                <Tabs defaultValue="edit" className="w-full">
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>Question Text</Label>
-                    <TabsList className="h-8">
-                      <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
-                      <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
-                    </TabsList>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="md:col-span-3 space-y-2">
+              <Tabs defaultValue="edit" className="w-full">
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Question Text</Label>
+                  <TabsList className="h-8">
+                    <TabsTrigger value="edit" className="text-xs">
+                      Edit
+                    </TabsTrigger>
+                    <TabsTrigger value="preview" className="text-xs">
+                      Preview
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsContent value="edit" className="mt-0">
+                  <Textarea value={editedData.question} onChange={(e) => setEditedData({ ...editedData, question: e.target.value })} className="min-h-[100px]" />
+                </TabsContent>
+                <TabsContent value="preview" className="mt-0">
+                  <div className="border rounded-md p-3 bg-muted/20 min-h-[100px]">
+                    <Markdown content={editedData.question} className="prose-sm" />
                   </div>
-                  <TabsContent value="edit" className="mt-0">
-                    <Textarea
-                      value={editedData.question}
-                      onChange={(e) => setEditedData({ ...editedData, question: e.target.value })}
-                      className="min-h-[100px]"
-                    />
-                  </TabsContent>
-                  <TabsContent value="preview" className="mt-0">
-                    <div className="border rounded-md p-3 bg-muted/20 min-h-[100px]">
-                      <Markdown content={editedData.question} className="prose-sm" />
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
-              <div className="space-y-2">
-                <Label>Points</Label>
-                <Input
-                  type="number"
-                  value={editedData.points}
-                  onChange={(e) => setEditedData({ ...editedData, points: Number.parseInt(e.target.value) })}
-                  min="1"
-                />
-              </div>
+                </TabsContent>
+              </Tabs>
             </div>
+            <div className="space-y-2">
+              <Label>Points</Label>
+              <Input type="number" value={editedData.points} onChange={(e) => setEditedData({ ...editedData, points: Number.parseInt(e.target.value) })} min="1" />
+            </div>
+          </div>
 
           <div className="space-y-3">
             <Label>Options</Label>
@@ -421,17 +387,12 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
                 <Input
                   value={opt}
                   onChange={(e) => {
-                    const newOpts = [...editedData.options]
-                    newOpts[i] = e.target.value
-                    setEditedData({ ...editedData, options: newOpts })
+                    const newOpts = [...editedData.options];
+                    newOpts[i] = e.target.value;
+                    setEditedData({ ...editedData, options: newOpts });
                   }}
                 />
-                <Button
-                  variant={editedData.correctAnswer === opt ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setEditedData({ ...editedData, correctAnswer: opt })}
-                  className={editedData.correctAnswer === opt ? "" : "bg-transparent"}
-                >
+                <Button variant={editedData.correctAnswer === opt ? "default" : "outline"} size="sm" onClick={() => setEditedData({ ...editedData, correctAnswer: opt })} className={editedData.correctAnswer === opt ? "" : "bg-transparent"}>
                   {editedData.correctAnswer === opt ? <Check className="h-4 w-4" /> : "Set Correct"}
                 </Button>
               </div>
@@ -443,25 +404,19 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
               <div className="flex items-center justify-between mb-2">
                 <Label>Explanation</Label>
                 <TabsList className="h-8">
-                  <TabsTrigger value="edit" className="text-xs">Edit</TabsTrigger>
-                  <TabsTrigger value="preview" className="text-xs">Preview</TabsTrigger>
+                  <TabsTrigger value="edit" className="text-xs">
+                    Edit
+                  </TabsTrigger>
+                  <TabsTrigger value="preview" className="text-xs">
+                    Preview
+                  </TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="edit" className="mt-0">
-                <Textarea
-                  value={editedData.explanation}
-                  onChange={(e) => setEditedData({ ...editedData, explanation: e.target.value })}
-                  rows={2}
-                />
+                <Textarea value={editedData.explanation} onChange={(e) => setEditedData({ ...editedData, explanation: e.target.value })} rows={2} />
               </TabsContent>
               <TabsContent value="preview" className="mt-0">
-                <div className="border rounded-md p-3 bg-muted/20 min-h-[60px]">
-                  {editedData.explanation ? (
-                    <Markdown content={editedData.explanation} className="prose-sm" />
-                  ) : (
-                    <p className="text-sm text-muted-foreground italic">No explanation to preview</p>
-                  )}
-                </div>
+                <div className="border rounded-md p-3 bg-muted/20 min-h-[60px]">{editedData.explanation ? <Markdown content={editedData.explanation} className="prose-sm" /> : <p className="text-sm text-muted-foreground italic">No explanation to preview</p>}</div>
               </TabsContent>
             </Tabs>
           </div>
@@ -478,17 +433,19 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const options = JSON.parse(question.options)
+  const options = JSON.parse(question.options);
   return (
     <Card className="group">
       <CardHeader className="py-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant="outline" className="text-[10px] font-bold">Q{index + 1}</Badge>
+              <Badge variant="outline" className="text-[10px] font-bold">
+                Q{index + 1}
+              </Badge>
               <Badge variant="secondary" className="text-[10px] font-bold capitalize">
                 {question.type.replace("-", " ")}
               </Badge>
@@ -504,12 +461,7 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
             <Button size="icon" variant="ghost" onClick={onEdit} className="h-8 w-8">
               <Edit2 className="h-4 w-4" />
             </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={onDelete}
-              className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
+            <Button size="icon" variant="ghost" onClick={onDelete} className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive">
               <Trash className="h-4 w-4" />
             </Button>
           </div>
@@ -518,14 +470,7 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
       <CardContent className="pb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {options.map((opt: string, i: number) => (
-            <div
-              key={i}
-              className={`p-2.5 rounded-lg border text-sm transition-colors ${
-                opt === question.correctAnswer
-                  ? "bg-primary/10 border-primary/40 font-medium"
-                  : "bg-muted/30 border-transparent"
-              }`}
-            >
+            <div key={i} className={`p-2.5 rounded-lg border text-sm transition-colors ${opt === question.correctAnswer ? "bg-primary/10 border-primary/40 font-medium" : "bg-muted/30 border-transparent"}`}>
               <div className="flex items-center justify-between">
                 <span>{opt}</span>
                 {opt === question.correctAnswer && <Check className="h-3.5 w-3.5 text-primary" />}
@@ -544,5 +489,5 @@ function QuestionItem({ question, index, isEditing, onEdit, onCancel, onDelete, 
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

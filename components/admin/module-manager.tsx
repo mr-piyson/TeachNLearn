@@ -1,39 +1,40 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash, ChevronDown, ChevronUp, Pencil, Check, X } from "lucide-react"
-import LessonManager from "./lesson-manager"
-import { trpc } from "@/lib/trpc/client"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Trash, ChevronDown, ChevronUp, Pencil, Check, X } from "lucide-react";
+import LessonManager from "./lesson-manager";
+import { trpc } from "@/lib/trpc/client";
 
 interface Module {
-  id: string
-  title: string
-  description: string
-  order: number
-  lessons: any[]
+  id: string;
+  title: string;
+  description: string;
+  order: number;
+  lessons: any[];
 }
 
 interface ModuleManagerProps {
-  courseId: string
-  modules: Module[]
+  courseId: string;
+  modules: Module[];
 }
 
 export default function ModuleManager({ courseId, modules: initialModules }: ModuleManagerProps) {
-  const [modules, setModules] = useState(initialModules)
-  const [expandedModule, setExpandedModule] = useState<string | null>(null)
-  const [newModule, setNewModule] = useState({ title: "", description: "" })
-  const [showNewForm, setShowNewForm] = useState(false)
-  const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
-  const [moduleEditForm, setModuleEditForm] = useState({ title: "", description: "" })
+  const [modules, setModules] = useState(initialModules);
+  const [expandedModule, setExpandedModule] = useState<string | null>(null);
+  const [newModule, setNewModule] = useState({ title: "", description: "" });
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
+  const [moduleEditForm, setModuleEditForm] = useState({ title: "", description: "" });
+  const utils = trpc.useUtils();
 
-  const createModule = trpc.admin.createModule.useMutation()
-  const updateModule = trpc.admin.updateModule.useMutation()
-  const deleteModule = trpc.admin.deleteModule.useMutation()
+  const createModule = trpc.admin.createModule.useMutation();
+  const updateModule = trpc.admin.updateModule.useMutation();
+  const deleteModule = trpc.admin.deleteModule.useMutation();
 
   const handleCreateModule = async () => {
     try {
@@ -41,45 +42,49 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
         courseId,
         ...newModule,
         order: modules.length,
-      })
+      });
 
-      setModules([...modules, { ...(module as any), lessons: [] }])
-      setNewModule({ title: "", description: "" })
-      setShowNewForm(false)
+      setModules([...modules, { ...(module as any), lessons: [] }]);
+      setNewModule({ title: "", description: "" });
+      setShowNewForm(false);
+      utils.admin.getCourseById.invalidate({ id: courseId });
     } catch (error) {
-      console.error("Failed to create module:", error)
+      console.error("Failed to create module:", error);
     }
-  }
+  };
 
   const handleStartModuleEdit = (module: Module) => {
-    setEditingModuleId(module.id)
-    setModuleEditForm({ title: module.title, description: module.description })
-  }
+    setEditingModuleId(module.id);
+    setModuleEditForm({ title: module.title, description: module.description });
+    utils.admin.getCourseById.invalidate({ id: courseId });
+  };
 
   const handleUpdateModule = async () => {
-    if (!editingModuleId) return
+    if (!editingModuleId) return;
     try {
       const updated = await updateModule.mutateAsync({
         id: editingModuleId,
         ...moduleEditForm,
-      })
-      setModules(modules.map(m => m.id === editingModuleId ? { ...m, ...updated } : m))
-      setEditingModuleId(null)
+      });
+      setModules(modules.map((m) => (m.id === editingModuleId ? { ...m, ...updated } : m)));
+      setEditingModuleId(null);
+      utils.admin.getCourseById.invalidate({ id: courseId });
     } catch (error) {
-      console.error("Failed to update module:", error)
+      console.error("Failed to update module:", error);
     }
-  }
+  };
 
   const handleDeleteModule = async (moduleId: string) => {
-    if (!confirm("Are you sure you want to delete this module?")) return
+    if (!confirm("Are you sure you want to delete this module?")) return;
 
     try {
-      await deleteModule.mutateAsync({ id: moduleId })
-      setModules(modules.filter((m) => m.id !== moduleId))
+      await deleteModule.mutateAsync({ id: moduleId });
+      setModules(modules.filter((m) => m.id !== moduleId));
+      utils.admin.getCourseById.invalidate({ id: courseId });
     } catch (error) {
-      console.error("Failed to delete module:", error)
+      console.error("Failed to delete module:", error);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -99,20 +104,11 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Module Title</Label>
-              <Input
-                value={newModule.title}
-                onChange={(e) => setNewModule({ ...newModule, title: e.target.value })}
-                placeholder="e.g., Introduction to Authentication"
-              />
+              <Input value={newModule.title} onChange={(e) => setNewModule({ ...newModule, title: e.target.value })} placeholder="e.g., Introduction to Authentication" />
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
-              <Textarea
-                value={newModule.description}
-                onChange={(e) => setNewModule({ ...newModule, description: e.target.value })}
-                placeholder="Brief description of this module..."
-                rows={3}
-              />
+              <Textarea value={newModule.description} onChange={(e) => setNewModule({ ...newModule, description: e.target.value })} placeholder="Brief description of this module..." rows={3} />
             </div>
             <div className="flex gap-2">
               <Button onClick={handleCreateModule}>Create Module</Button>
@@ -134,19 +130,11 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
                     <div className="space-y-3 pr-4">
                       <div className="space-y-1">
                         <Label className="text-xs uppercase text-muted-foreground font-bold tracking-wider">Module Title</Label>
-                        <Input 
-                          value={moduleEditForm.title} 
-                          onChange={(e) => setModuleEditForm({...moduleEditForm, title: e.target.value})}
-                          className="font-bold"
-                        />
+                        <Input value={moduleEditForm.title} onChange={(e) => setModuleEditForm({ ...moduleEditForm, title: e.target.value })} className="font-bold" />
                       </div>
                       <div className="space-y-1">
                         <Label className="text-xs uppercase text-muted-foreground font-bold tracking-wider">Description</Label>
-                        <Textarea 
-                          value={moduleEditForm.description} 
-                          onChange={(e) => setModuleEditForm({...moduleEditForm, description: e.target.value})}
-                          rows={2}
-                        />
+                        <Textarea value={moduleEditForm.description} onChange={(e) => setModuleEditForm({ ...moduleEditForm, description: e.target.value })} rows={2} />
                       </div>
                       <div className="flex gap-2 pt-2">
                         <Button size="sm" onClick={handleUpdateModule}>
@@ -180,11 +168,7 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
                       </Button>
                     </>
                   )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}
-                  >
+                  <Button size="sm" variant="ghost" onClick={() => setExpandedModule(expandedModule === module.id ? null : module.id)}>
                     {expandedModule === module.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </Button>
                 </div>
@@ -200,5 +184,5 @@ export default function ModuleManager({ courseId, modules: initialModules }: Mod
         ))}
       </div>
     </div>
-  )
+  );
 }
