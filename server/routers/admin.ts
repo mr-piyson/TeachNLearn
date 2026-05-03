@@ -5,7 +5,12 @@ import { TRPCError } from "@trpc/server";
 
 export const adminRouter = router({
   getStats: teacherOrAdminProcedure.query(async () => {
-    const [coursesCount, usersCount, enrollmentsCount, certificatesCount] = await Promise.all([prisma.course.count(), prisma.user.count(), prisma.enrollment.count(), prisma.certificate.count()]);
+    const [coursesCount, usersCount, enrollmentsCount, certificatesCount] = await Promise.all([
+      prisma.course.count(),
+      prisma.user.count(),
+      prisma.enrollment.count(),
+      prisma.certificate.count(),
+    ]);
 
     return {
       coursesCount,
@@ -15,27 +20,29 @@ export const adminRouter = router({
     };
   }),
 
-  getAllCourses: teacherOrAdminProcedure.input(z.object({ teacherId: z.string().optional() })).query(async ({ ctx, input }) => {
-    const { userRole, session } = ctx;
+  getAllCourses: teacherOrAdminProcedure
+    .input(z.object({ teacherId: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      const { userRole, session } = ctx;
 
-    const where = {
-      ...(userRole === "teacher" && { teacherId: session.user.id }),
-      ...(input.teacherId && { teacherId: input.teacherId }),
-    };
+      const where = {
+        ...(userRole === "teacher" && { teacherId: session.user.id }),
+        ...(input.teacherId && { teacherId: input.teacherId }),
+      };
 
-    return await prisma.course.findMany({
-      where,
-      include: {
-        modules: true,
-        _count: {
-          select: { enrollments: true },
+      return await prisma.course.findMany({
+        where,
+        include: {
+          modules: true,
+          _count: {
+            select: { enrollments: true },
+          },
         },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  }),
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
 
   getCourseById: teacherOrAdminProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {
     const { userRole, session } = ctx;
@@ -120,12 +127,22 @@ export const adminRouter = router({
   deleteCourse: teacherOrAdminProcedure.input(z.object({ id: z.string() })).mutation(async ({ input, ctx }) => {
     const isAdmin = ctx.userRole === "admin";
 
-    await prisma.course.delete({
-      where: {
-        id: input.id,
-        ...(isAdmin ? {} : { teacherId: ctx.session.user.id }),
-      },
-    });
+    if (isAdmin) {
+      await prisma.course.delete({
+        where: { id: input.id },
+      });
+    } else {
+      const result = await prisma.course.deleteMany({
+        where: {
+          id: input.id,
+          teacherId: ctx.session.user.id,
+        },
+      });
+      if (result.count === 0) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Course not found or not authorized" });
+      }
+    }
+
     return { success: true };
   }),
 

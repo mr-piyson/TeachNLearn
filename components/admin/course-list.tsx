@@ -3,14 +3,38 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { trpc } from "@/lib/trpc/client";
 import Link from "next/link";
-import { Plus, Edit, Eye, BookOpen, Clock, Users as UsersIcon } from "lucide-react";
+import { Plus, Edit, Eye, BookOpen, Clock, Trash2, Users as UsersIcon } from "lucide-react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface CourseListProps {
   courses: any[];
 }
 
 export default function CourseList({ courses }: CourseListProps) {
+  const utils = trpc.useUtils();
+  const deleteCourse = trpc.admin.deleteCourse.useMutation({
+    onSuccess: async () => {
+      await utils.admin.getAllCourses.invalidate();
+      toast.success("Course deleted successfully");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete course");
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -28,13 +52,19 @@ export default function CourseList({ courses }: CourseListProps) {
 
       <div className="grid gap-4">
         {courses.map((course) => (
-          <Card key={course.id} className="group overflow-hidden border-border/50 hover:border-primary/30 transition-all">
+          <Card
+            key={course.id}
+            className="group overflow-hidden border-border/50 hover:border-primary/30 transition-all"
+          >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-xl group-hover:text-primary transition-colors">{course.title}</CardTitle>
-                    <Badge variant={course.isPublished ? "default" : "secondary"} className="text-[10px] uppercase tracking-wider">
+                    <Badge
+                      variant={course.isPublished ? "default" : "secondary"}
+                      className="text-[10px] uppercase tracking-wider"
+                    >
                       {course.isPublished ? "Published" : "Draft"}
                     </Badge>
                   </div>
@@ -53,6 +83,29 @@ export default function CourseList({ courses }: CourseListProps) {
                       Preview
                     </Button>
                   </Link>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete course</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete the course and all its related content, including modules,
+                          lessons, enrollments, tests, and certificates.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteCourse.mutate({ id: course.id })}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </CardHeader>
