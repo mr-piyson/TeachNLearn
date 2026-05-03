@@ -17,7 +17,7 @@
   </a>
 </p>
 
-<img src="public/overview.png" alt="TeachNLearn Dashboard Overview" width="80%" style="border-radius: 8px; margin-top: 16px;" />
+<img src="/public/overveiw.png" alt="TeachNLearn Dashboard Overview" width="80%" style="border-radius: 8px; margin-top: 16px;" />
 
 </div>
 
