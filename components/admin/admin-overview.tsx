@@ -1,7 +1,9 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BookOpen, Users, FileText, Award, TrendingUp } from "lucide-react";
+import { Area, AreaChart, CartesianGrid, Legend, XAxis, YAxis } from "recharts";
 
 interface AdminOverviewProps {
   stats: {
@@ -9,6 +11,11 @@ interface AdminOverviewProps {
     usersCount: number;
     enrollmentsCount: number;
     certificatesCount: number;
+    activity: {
+      label: string;
+      enrollments: number;
+      newCourses: number;
+    }[];
   };
 }
 
@@ -76,10 +83,55 @@ export default function AdminOverview({ stats }: AdminOverviewProps) {
             Platform Activity
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-50 flex items-center justify-center text-muted-foreground italic border-2 border-dashed rounded-lg">
-            Activity chart placeholder - Your platform is growing!
-          </div>
+        <CardContent className="h-80 md:h-96 lg:h-112">
+          <ChartContainer
+            id="admin-activity"
+            config={{
+              newCourses: { label: "New Courses", color: "hsl(219, 90%, 55%)" },
+              enrollments: { label: "Enrollments", color: "hsl(165, 72%, 45%)" },
+            }}
+            className="h-full w-full"
+          >
+            <AreaChart data={stats.activity} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="fill-newCourses" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-newCourses)" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="var(--color-newCourses)" stopOpacity={0.05} />
+                </linearGradient>
+                <linearGradient id="fill-enrollments" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="var(--color-enrollments)" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="var(--color-enrollments)" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: "currentColor", fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis tick={{ fill: "currentColor", fontSize: 12 }} axisLine={false} tickLine={false} width={40} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend verticalAlign="top" content={<ChartLegendContent />} wrapperStyle={{ paddingBottom: "20px" }} />
+              <Area
+                type="monotone"
+                dataKey="newCourses"
+                stroke="var(--color-newCourses)"
+                fill="url(#fill-newCourses)"
+                strokeWidth={2}
+                dot={false}
+              />
+              <Area
+                type="monotone"
+                dataKey="enrollments"
+                stroke="var(--color-enrollments)"
+                fill="url(#fill-enrollments)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </AreaChart>
+          </ChartContainer>
         </CardContent>
       </Card>
     </div>

@@ -12,11 +12,77 @@ export const adminRouter = router({
       prisma.certificate.count(),
     ]);
 
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 6);
+    startDate.setHours(0, 0, 0, 0);
+
+    const [recentEnrollments, recentCourses] = await Promise.all([
+      prisma.enrollment.findMany({
+        where: {
+          enrolledAt: {
+            gte: startDate,
+          },
+        },
+        select: {
+          enrolledAt: true,
+        },
+      }),
+      prisma.course.findMany({
+        where: {
+          createdAt: {
+            gte: startDate,
+          },
+        },
+        select: {
+          createdAt: true,
+        },
+      }),
+    ]);
+
+    const activity = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + index);
+      const dayKey = date.toISOString().slice(0, 10);
+
+      return {
+        label: date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        dayKey,
+        enrollments: 0,
+        newCourses: 0,
+      };
+    });
+
+    const activityMap = new Map(activity.map((entry) => [entry.dayKey, entry]));
+
+    for (const enrollment of recentEnrollments) {
+      const key = enrollment.enrolledAt.toISOString().slice(0, 10);
+      const row = activityMap.get(key);
+      if (row) {
+        row.enrollments += 1;
+      }
+    }
+
+    for (const course of recentCourses) {
+      const key = course.createdAt.toISOString().slice(0, 10);
+      const row = activityMap.get(key);
+      if (row) {
+        row.newCourses += 1;
+      }
+    }
+
     return {
       coursesCount,
       usersCount,
       enrollmentsCount,
       certificatesCount,
+      activity: activity.map(({ label, enrollments, newCourses }) => ({
+        label,
+        enrollments,
+        newCourses,
+      })),
     };
   }),
 
