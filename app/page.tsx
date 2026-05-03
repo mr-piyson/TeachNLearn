@@ -9,7 +9,26 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-import { BookOpen, Code2, Award, Users, Globe, Zap, Star, ChevronLeft, ChevronRight, ArrowRight, Check, Play, TrendingUp, Clock, BarChart3, Menu, X, ShieldCheck } from "lucide-react";
+import {
+  BookOpen,
+  Code2,
+  Award,
+  Users,
+  Globe,
+  Zap,
+  Star,
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  Check,
+  Play,
+  TrendingUp,
+  Clock,
+  BarChart3,
+  Menu,
+  X,
+  ShieldCheck,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 
 const FEATURES = [
@@ -67,9 +86,17 @@ const FEATURES = [
 function Marquee() {
   return (
     <div className="overflow-hidden border-y border-border bg-muted/30 py-3">
-      <motion.div className="flex gap-2.5 w-max" animate={{ x: ["0%", "-50%"] }} transition={{ repeat: Infinity, duration: 30, ease: "linear" }}>
+      <motion.div
+        className="flex gap-2.5 w-max"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+      >
         {[...CATEGORIES, ...CATEGORIES].map((cat, i) => (
-          <Badge key={i} variant="secondary" className="rounded-full px-4 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap cursor-pointer hover:text-foreground transition-colors">
+          <Badge
+            key={i}
+            variant="secondary"
+            className="rounded-full px-4 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap cursor-pointer hover:text-foreground transition-colors"
+          >
             {cat}
           </Badge>
         ))}
@@ -78,7 +105,20 @@ function Marquee() {
   );
 }
 
-const CATEGORIES = ["Development", "Design", "AI & ML", "Marketing", "Business", "Data Science", "DevOps", "Cybersecurity", "Photography", "Finance", "Writing", "Music"];
+const CATEGORIES = [
+  "Development",
+  "Design",
+  "AI & ML",
+  "Marketing",
+  "Business",
+  "Data Science",
+  "DevOps",
+  "Cybersecurity",
+  "Photography",
+  "Finance",
+  "Writing",
+  "Music",
+];
 
 // ─── ANIMATION VARIANTS ───────────────────────────────────────────────────────
 const fadeUp = {
@@ -101,9 +141,10 @@ function BackgroundAnimation() {
           rotate: [0, 5, 0],
         }}
         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute -inset-[10%] opacity-30"
+        className="absolute inset-[-10%] opacity-30"
         style={{
-          background: "radial-gradient(circle at 20% 30%, #ddd6fe 0%, transparent 50%), radial-gradient(circle at 80% 70%, #bae6fd 0%, transparent 50%)",
+          background:
+            "radial-gradient(circle at 20% 30%, #ddd6fe 0%, transparent 50%), radial-gradient(circle at 80% 70%, #bae6fd 0%, transparent 50%)",
           filter: "blur(80px)",
         }}
       />
@@ -195,14 +236,6 @@ function Navbar() {
             </span>
           </motion.div>
 
-          <nav className="hidden md:flex items-center gap-7">
-            {["Courses", "Teach", "Pricing", "Blog"].map((item) => (
-              <motion.a key={item} href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors" whileHover={{ y: -1 }}>
-                {item}
-              </motion.a>
-            ))}
-          </nav>
-
           <div className="hidden md:flex items-center gap-2.5">
             <Link href="/auth/signin">
               <Button variant="ghost" size="sm" className="text-sm">
@@ -224,7 +257,12 @@ function Navbar() {
 
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="md:hidden bg-white/95 backdrop-blur border-t border-border overflow-hidden">
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="md:hidden bg-white/95 backdrop-blur border-t border-border overflow-hidden"
+          >
             <div className="container mx-auto px-5 py-4 flex flex-col gap-3">
               {["Courses", "Teach", "Pricing", "Blog"].map((item) => (
                 <a key={item} href="#" className="text-sm text-muted-foreground py-1">
@@ -277,18 +315,35 @@ export default function HomePage() {
         <BackgroundAnimation />
 
         {/* Dot grid */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle, #000 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: "radial-gradient(circle, #000 1px, transparent 1px)", backgroundSize: "28px 28px" }}
+        />
 
         {/* Static Blobs (Preserved and updated with subtle movement) */}
         <div className="absolute inset-0 pointer-events-none">
-          <motion.div animate={{ opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 8, repeat: Infinity }} className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-100/70 rounded-full blur-3xl" />
-          <motion.div animate={{ opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 10, repeat: Infinity, delay: 1 }} className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-sky-100/60 rounded-full blur-3xl" />
+          <motion.div
+            animate={{ opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 8, repeat: Infinity }}
+            className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-100/70 rounded-full blur-3xl"
+          />
+          <motion.div
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 10, repeat: Infinity, delay: 1 }}
+            className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-sky-100/60 rounded-full blur-3xl"
+          />
         </div>
 
-        <motion.div className="relative z-10 container mx-auto px-5 max-w-5xl text-center" style={{ y: heroY, opacity: heroOpacity }}>
+        <motion.div
+          className="relative z-10 container mx-auto px-5 max-w-5xl text-center"
+          style={{ y: heroY, opacity: heroOpacity }}
+        >
           {/* Badge */}
           <motion.div variants={fadeUp} initial="hidden" animate="show" custom={0}>
-            <Badge variant="outline" className="mb-7 px-4 py-1.5 rounded-full text-xs font-medium border-border shadow-sm bg-white/80 backdrop-blur">
+            <Badge
+              variant="outline"
+              className="mb-7 px-4 py-1.5 rounded-full text-xs font-medium border-border shadow-sm bg-white/80 backdrop-blur"
+            >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2 inline-block animate-pulse" />
               {activeUsers.data}+ users already inside
               <ArrowRight className="h-3 w-3 ml-2 text-muted-foreground" />
@@ -304,7 +359,12 @@ export default function HomePage() {
                     <>
                       <span className="relative inline-block">
                         Teach
-                        <motion.span className="absolute bottom-1 left-0 right-0 h-[3px] bg-foreground rounded-full origin-left block" initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.9, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} />
+                        <motion.span
+                          className="absolute bottom-1 left-0 right-0 h-0.75 bg-foreground rounded-full origin-left block"
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ delay: 0.9, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        />
                       </span>
                       , Learn
                     </>
@@ -317,23 +377,45 @@ export default function HomePage() {
           </div>
 
           {/* Sub */}
-          <motion.p variants={fadeUp} initial="hidden" animate="show" custom={4} className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto mb-9">
-            Join the world's most vibrant learning community. Master in-demand skills, share what you know, and unlock real career opportunities.
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={4}
+            className="text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto mb-9"
+          >
+            Join the world's most vibrant learning community. Master in-demand skills, share what you know, and unlock
+            real career opportunities.
           </motion.p>
 
           {/* CTAs */}
-          <motion.div variants={fadeUp} initial="hidden" animate="show" custom={5} className="flex items-center justify-center gap-3 flex-wrap">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={5}
+            className="flex items-center justify-center gap-3 flex-wrap"
+          >
             <Link href="/auth/signin">
-              <Button size="lg" className="rounded-xl px-7 h-12 text-sm font-semibold shadow-md hover:shadow-lg transition-shadow">
+              <Button
+                size="lg"
+                className="rounded-xl px-7 h-12 text-sm font-semibold shadow-md hover:shadow-lg transition-shadow"
+              >
                 Start Learning Free <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             </Link>
           </motion.div>
 
           {/* Trust row */}
-          <motion.div variants={fadeUp} initial="hidden" animate="show" custom={6} className="mt-14 flex items-center justify-center gap-6 flex-wrap">
-            <span className="text-xs text-muted-foreground/60 uppercase tracking-widest">Trusted by teams at</span>
-            {["Google", "Meta", "Spotify", "Netflix", "Apple"].map((co) => (
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={6}
+            className="mt-14 flex items-center justify-center gap-6 flex-wrap"
+          >
+            <span className="text-xs text-muted-foreground/60 uppercase tracking-widest">Developed By</span>
+            {["Nouf Khalid Nasser Albusmait"].map((co) => (
               <span key={co} className="text-xs font-semibold text-muted-foreground/50 tracking-wider">
                 {co}
               </span>
@@ -342,8 +424,17 @@ export default function HomePage() {
         </motion.div>
 
         {/* Scroll hint line */}
-        <motion.div className="absolute bottom-8 left-1/2 -translate-x-1/2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }}>
-          <motion.div className="w-px h-10 bg-linear-to-b from-transparent via-border to-transparent mx-auto" animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }} />
+        <motion.div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.6 }}
+        >
+          <motion.div
+            className="w-px h-10 bg-linear-to-b from-transparent via-border to-transparent mx-auto"
+            animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 1, 0.3] }}
+            transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
+          />
         </motion.div>
       </section>
 
@@ -353,8 +444,17 @@ export default function HomePage() {
       {/* ── FEATURES ── */}
       <section className="py-24 bg-background">
         <div className="container mx-auto px-5 max-w-7xl">
-          <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.55 }}>
-            <Badge variant="secondary" className="mb-3 text-xs font-semibold uppercase tracking-widest rounded-full px-3 py-1">
+          <motion.div
+            className="text-center mb-14"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55 }}
+          >
+            <Badge
+              variant="secondary"
+              className="mb-3 text-xs font-semibold uppercase tracking-widest rounded-full px-3 py-1"
+            >
               Why TeachNLearn
             </Badge>
             <h2 className="text-[clamp(2rem,4vw,2.8rem)] font-bold tracking-tight text-foreground leading-tight">
@@ -366,10 +466,18 @@ export default function HomePage() {
 
           <div ref={featuresRef} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map((f, i) => (
-              <motion.div key={f.title} initial={{ opacity: 0, y: 24 }} animate={featuresInView ? { opacity: 1, y: 0 } : {}} transition={{ delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} whileHover={{ y: -5 }}>
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 24 }}
+                animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -5 }}
+              >
                 <Card className="h-full border border-border bg-white hover:border-foreground/15 hover:shadow-md transition-all duration-300">
                   <CardContent className="p-6">
-                    <div className={`w-10 h-10 rounded-xl ${f.bg} border ${f.border} flex items-center justify-center mb-4`}>
+                    <div
+                      className={`w-10 h-10 rounded-xl ${f.bg} border ${f.border} flex items-center justify-center mb-4`}
+                    >
                       <f.icon className={`h-5 w-5 ${f.color}`} />
                     </div>
                     <h3 className="font-semibold text-foreground mb-2 text-sm">{f.title}</h3>
@@ -385,8 +493,16 @@ export default function HomePage() {
       {/* ── CTA ── */}
       <section ref={ctaRef} className="py-24 bg-muted/20 border-t border-border">
         <div className="container mx-auto px-5 max-w-2xl text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={ctaInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}>
-            <motion.div className="text-5xl mb-5 inline-block" animate={{ y: [0, -7, 0] }} transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <motion.div
+              className="text-5xl mb-5 inline-block"
+              animate={{ y: [0, -7, 0] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+            >
               🚀
             </motion.div>
             <h2 className="text-[clamp(2rem,4vw,3rem)] font-bold tracking-tight text-foreground leading-tight mb-4">
@@ -394,9 +510,15 @@ export default function HomePage() {
               <br />
               starts today
             </h2>
-            <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-md mx-auto">Join a quarter million learners already transforming their careers. Your first course is on us — no credit card required.</p>
+            <p className="text-muted-foreground text-base leading-relaxed mb-8 max-w-md mx-auto">
+              Join a quarter million learners already transforming their careers. Your first course is on us — no credit
+              card required.
+            </p>
             <Link href="/auth/signin">
-              <Button size="lg" className="rounded-xl px-8 h-12 text-sm font-semibold shadow-md hover:shadow-xl transition-shadow">
+              <Button
+                size="lg"
+                className="rounded-xl px-8 h-12 text-sm font-semibold shadow-md hover:shadow-xl transition-shadow"
+              >
                 Start Learning Free — It's Free <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             </Link>
@@ -416,18 +538,24 @@ export default function HomePage() {
                 </div>
                 <span className="text-sm font-bold tracking-tight text-foreground">TeachNLearn</span>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed max-w-[200px]">Empowering educators and learners to connect, grow, and succeed together.</p>
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-50">
+                Empowering educators and learners to connect, grow, and succeed together.
+              </p>
             </div>
             {[
-              { title: "Learn", links: ["Browse Courses", "My Dashboard", "Certificates", "Scholarships"] },
-              { title: "Teach", links: ["Become Instructor", "Course Builder", "Earnings", "Resources"] },
-              { title: "Company", links: ["About", "Blog", "Careers", "Contact"] },
+              { title: "Learn", links: ["Browse Courses", "My Dashboard", "Certificates"] },
+              { title: "Teach", links: ["Become Instructor", "Course Builder", "Resources"] },
+              { title: "Project", links: ["About", "Contribution", "Contact"] },
             ].map((col) => (
               <div key={col.title}>
                 <p className="text-xs font-semibold text-foreground uppercase tracking-widest mb-3">{col.title}</p>
                 <div className="space-y-2.5">
                   {col.links.map((l) => (
-                    <a key={l} href="#" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    <a
+                      key={l}
+                      href="#"
+                      className="block text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       {l}
                     </a>
                   ))}
@@ -437,14 +565,7 @@ export default function HomePage() {
           </div>
           <Separator />
           <div className="flex items-center justify-between flex-wrap gap-3 mt-6">
-            <p className="text-xs text-muted-foreground">© 2025 TeachNLearn Academy. All rights reserved.</p>
-            <div className="flex gap-5">
-              {["Privacy", "Terms", "Cookies"].map((l) => (
-                <a key={l} href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                  {l}
-                </a>
-              ))}
-            </div>
+            <p className="text-xs text-muted-foreground">© 2026 TeachNLearn Academy.</p>
           </div>
         </div>
       </footer>

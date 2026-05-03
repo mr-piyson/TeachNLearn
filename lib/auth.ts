@@ -18,6 +18,14 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24, // 1 day
   },
   plugins: [nextCookies()],
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        defaultValue: "STUDENT",
+      },
+    },
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;

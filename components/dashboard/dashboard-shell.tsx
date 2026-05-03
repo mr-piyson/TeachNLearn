@@ -3,7 +3,13 @@
 import * as React from "react";
 import { AppSidebar } from "./app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth-client";
@@ -11,6 +17,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Award, LogOut, Settings, Bell } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "../ui/badge";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -21,6 +28,8 @@ interface DashboardShellProps {
 export default function DashboardShell({ children, user, userRole }: DashboardShellProps) {
   const router = useRouter();
   const pathname = usePathname();
+
+  console.log(user);
 
   const handleSignOut = async () => {
     await signOut();
@@ -63,7 +72,10 @@ export default function DashboardShell({ children, user, userRole }: DashboardSh
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full ring-offset-background transition-all hover:ring-2 hover:ring-primary/20">
+                <Button
+                  variant="ghost"
+                  className="relative h-9 w-9 rounded-full ring-offset-background transition-all hover:ring-2 hover:ring-primary/20"
+                >
                   <Avatar className="h-9 w-9">
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
                   </Avatar>
@@ -71,9 +83,15 @@ export default function DashboardShell({ children, user, userRole }: DashboardSh
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 mt-2">
                 <div className="flex items-center justify-start gap-2 p-2">
+                  <Avatar className="h-9 m-1 w-9">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
+                  </Avatar>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.name || "User"}</p>
                     <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <Badge className="capitalize" variant={"default"}>
+                      {user.role}
+                    </Badge>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
@@ -84,7 +102,10 @@ export default function DashboardShell({ children, user, userRole }: DashboardSh
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
