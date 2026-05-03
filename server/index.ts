@@ -1,11 +1,12 @@
-import { router } from './trpc';
-import { progressRouter } from './routers/progress';
-import { enrollmentsRouter } from './routers/enrollments';
-import { testsRouter } from './routers/tests';
-import { adminRouter } from './routers/admin';
-import { usersRouter } from './routers/users';
-import { certificatesRouter } from './routers/certificates';
-import { coursesRouter } from './routers/courses';
+import { router } from "./trpc";
+import { progressRouter } from "./routers/progress";
+import { enrollmentsRouter } from "./routers/enrollments";
+import { testsRouter } from "./routers/tests";
+import { adminRouter } from "./routers/admin";
+import { usersRouter } from "./routers/users";
+import { certificatesRouter } from "./routers/certificates";
+import { coursesRouter } from "./routers/courses";
+import { publicRouter } from "./routers/public";
 
 export const appRouter = router({
   progress: progressRouter,
@@ -15,6 +16,7 @@ export const appRouter = router({
   users: usersRouter,
   certificates: certificatesRouter,
   courses: coursesRouter,
+  public: publicRouter,
 });
 
 // Export type router type signature,
